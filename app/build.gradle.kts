@@ -75,4 +75,7 @@ dependencies {
     // Retrofit with Moshi Converter
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0")
+
+    implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
+
 }

@@ -1,10 +1,15 @@
 package com.video.app.screens
 
+var idIncrement = 0;
+fun getIdIn(): Int {
+    return idIncrement++;
+}
+
 sealed class Router(val id: Int, val route: String) {
-    data object HomeScreen : Router(1, "home")
-    data object SettingScreen : Router(5, "setting")
-
-
-    data object LoginScreen : Router(6, "login")
-    data object RegisterScreen : Router(7, "register")
+    data object HomeScreen : Router(getIdIn(), "home")
+    data object SettingScreen : Router(getIdIn(), "setting")
+    data object LoginScreen : Router(getIdIn(), "login")
+    data object RegisterScreen : Router(getIdIn(), "register")
+    data object ProfileScreen : Router(getIdIn(), "profile")
+    data object SearchScreen:Router(getIdIn(),"search")
 }

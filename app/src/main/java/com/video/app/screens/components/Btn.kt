@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,21 +22,17 @@ fun BtnText(
     modifier: Modifier = Modifier,
     text: String,
     textStyle: TextStyle = TextStyle(
-        color = MaterialTheme.colorScheme.background,
         fontWeight = FontWeight.SemiBold,
     ),
     shape: RoundedCornerShape? = null,
     height: Dp? = null
 ) {
-    TextButton(
+    ElevatedButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .height(height ?: CONSTANT.UI.HEIGHT_BUTTON),
         shape = shape ?: RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON),
-        colors = ButtonDefaults.buttonColors(
-
-        )
     ) {
         Text(text = text, style = textStyle)
     }
