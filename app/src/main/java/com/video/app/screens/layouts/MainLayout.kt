@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import com.video.app.screens.components.NavigationBarBottom
 import com.video.app.states.viewmodels.UserViewModel
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainLayout(
     userViewModel: UserViewModel,

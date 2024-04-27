@@ -50,7 +50,6 @@ import com.video.app.states.viewmodels.UserViewModel
 class RegisterScreen {
     @Composable
     fun Screen(userViewModel: UserViewModel) {
-        val context = LocalContext.current
         //data
         var username by remember {
             mutableStateOf("")
@@ -155,6 +154,14 @@ class RegisterScreen {
                 }
             }
         }
+
+        var enabledButton by remember {
+            mutableStateOf(true)
+        }
+        val activeButton: () -> Unit = {
+            enabledButton = true
+        }
+        //UI
         AuthLayout {
             LazyColumn(
                 modifier = Modifier
@@ -261,6 +268,7 @@ class RegisterScreen {
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     BtnText(
+                        enabled = enabledButton,
                         onClick = {
                             if (username.isNotBlank() &&
                                 password.isNotBlank() &&
@@ -271,16 +279,22 @@ class RegisterScreen {
                                 ValidRegex.isEmail(email) &&
                                 password.length >= 8
                             ) {
-                                Toast.makeText(context, "Logging...", Toast.LENGTH_SHORT).show()
+                                enabledButton = false;
+                                Toast.makeText(userViewModel.context, "Logging...", Toast.LENGTH_SHORT).show()
                                 userViewModel.register(
                                     RegisterRequest(
                                         username, password, fullName, email, phone
-                                    )
+                                    ), activeButton
                                 )
                             } else validate()
-                        }, text = "sign up".uppercase()
-                    )
-                    TextButton(onClick = { Navigate(Router.LoginScreen) }) {
+                        },
+                        text = "sign up".uppercase(),
+
+                        )
+                    TextButton(
+                        onClick = { Navigate(Router.LoginScreen) },
+                        enabled = enabledButton
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center,
@@ -298,6 +312,7 @@ class RegisterScreen {
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun RegisterPreview() {

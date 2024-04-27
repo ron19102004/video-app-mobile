@@ -12,7 +12,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 sealed class URL(val value: String) {
-    data object BASE : URL("https://4a0f-171-225-185-116.ngrok-free.app/")
+    data object BASE : URL("https://ce92-171-225-185-116.ngrok-free.app/")
 }
 
 @SuppressLint("StaticFieldLeak")

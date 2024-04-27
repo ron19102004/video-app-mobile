@@ -25,9 +25,11 @@ fun BtnText(
         fontWeight = FontWeight.SemiBold,
     ),
     shape: RoundedCornerShape? = null,
-    height: Dp? = null
+    height: Dp? = null,
+    enabled: Boolean = true
 ) {
     ElevatedButton(
+        enabled = enabled,
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()

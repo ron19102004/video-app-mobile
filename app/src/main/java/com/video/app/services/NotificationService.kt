@@ -32,6 +32,8 @@ sealed class NotificationService {
                     .setSmallIcon(R.drawable.video_logo)
                     .setContentTitle(contentTitle)
                     .setContentText(contentText)
+                    .setStyle(NotificationCompat.BigTextStyle()
+                        .bigText(contentText))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
                     .setSound(soundUri)

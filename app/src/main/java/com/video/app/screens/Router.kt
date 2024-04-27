@@ -12,4 +12,5 @@ sealed class Router(val id: Int, val route: String) {
     data object RegisterScreen : Router(getIdIn(), "register")
     data object ProfileScreen : Router(getIdIn(), "profile")
     data object SearchScreen:Router(getIdIn(),"search")
+    data object ReportScreen:Router(getIdIn(),"report")
 }

@@ -26,7 +26,8 @@ fun Input(
     height: Dp? = null,
     isError: Boolean = false,
     errorMessage: String = "Error",
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    singleLine: Boolean = true
 ) {
     OutlinedTextField(
         value = value,
@@ -41,7 +42,7 @@ fun Input(
                 Text(text = if (isError) errorMessage else label)
             }
         },
-        singleLine = true,
+        singleLine = singleLine,
         isError = isError,
         visualTransformation = if (isPassword == true) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(

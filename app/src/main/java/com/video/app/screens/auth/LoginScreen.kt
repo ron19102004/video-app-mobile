@@ -46,7 +46,6 @@ import com.video.app.states.viewmodels.UserViewModel
 class LoginScreen {
     @Composable
     fun Screen(userViewModel: UserViewModel) {
-        val context = LocalContext.current
         var username by remember {
             mutableStateOf("")
         }
@@ -80,6 +79,13 @@ class LoginScreen {
                 }
             }
         }
+        var enabledButton by remember {
+            mutableStateOf(true)
+        }
+        val activeButton: () -> Unit = {
+            enabledButton = true
+        }
+        //UI
         AuthLayout {
             LazyColumn(
                 modifier = Modifier
@@ -134,19 +140,24 @@ class LoginScreen {
                     Spacer(modifier = Modifier.height(10.dp))
 
                     BtnText(
+                        enabled = enabledButton,
                         onClick = {
                             if (username.isNotBlank() && password.isNotBlank() && password.length >= 8) {
-                                Toast.makeText(context, "Logging...", Toast.LENGTH_SHORT).show()
+                                enabledButton = false
+                                Toast.makeText(userViewModel.context, "Logging...", Toast.LENGTH_SHORT).show()
                                 userViewModel.login(
                                     LoginRequest(
                                         username,
                                         password
-                                    )
+                                    ), activeButton
                                 )
                             } else validate()
                         }, text = "sign in".uppercase()
                     )
-                    TextButton(onClick = { Navigate(Router.RegisterScreen) }) {
+                    TextButton(
+                        onClick = { Navigate(Router.RegisterScreen) },
+                        enabled = enabledButton
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center,
