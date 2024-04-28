@@ -8,9 +8,11 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -23,6 +25,7 @@ import com.video.app.screens.Router
 import com.video.app.screens.SearchScreen
 import com.video.app.screens.SettingScreen
 import com.video.app.screens.auth.LoginScreen
+import com.video.app.screens.auth.OTPScreen
 import com.video.app.screens.auth.RegisterScreen
 import com.video.app.states.objects.NavigationState
 import com.video.app.states.objects.UiState
@@ -35,6 +38,10 @@ lateinit var navController: NavHostController
 fun Navigate(router: Router) {
     navController.navigate(route = router.route)
     NavigationState.navSelected = router.id
+}
+
+fun Navigate(route: String) {
+    navController.navigate(route = route)
 }
 
 class MainActivity : ComponentActivity() {
@@ -71,6 +78,24 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(route = Router.LoginScreen.route) {
                         LoginScreen().Screen(userViewModel = userViewModel)
+                    }
+                    composable(route = Router.OTPScreen.route + "/{email}/{token}",
+                        arguments = listOf(
+                            navArgument("email") {
+                                type = NavType.StringType;
+                                nullable = false
+                            },
+                            navArgument("token") {
+                                type = NavType.StringType;
+                                nullable = false
+                            }
+                        )
+                    ) {
+                        OTPScreen().Screen(
+                            userViewModel = userViewModel,
+                            email = it.arguments?.getString("email")!!,
+                            token = it.arguments?.getString("token")!!
+                        )
                     }
                     composable(route = Router.RegisterScreen.route) {
                         RegisterScreen().Screen(userViewModel = userViewModel)

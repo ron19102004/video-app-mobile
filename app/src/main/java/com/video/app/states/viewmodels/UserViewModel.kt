@@ -20,6 +20,8 @@ import com.video.app.api.models.LoginResponse
 import com.video.app.api.models.RegisterRequest
 import com.video.app.api.models.ReportModel
 import com.video.app.api.models.UserModel
+import com.video.app.api.models.VerifyOTPDataResponse
+import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.api.repositories.ReportRepository
 import com.video.app.api.repositories.UserRepository
 import com.video.app.screens.Router
@@ -34,6 +36,7 @@ object SharedPreferencesAuthKey {
     const val ROOT = "auth"
     const val ACCESS_TOKEN = "access-token"
     const val IS_LOGGED_IN = "isLoggedIn"
+    const val TFA = "two-factor-authentication"
 }
 
 class UserViewModel : ViewModel() {
@@ -43,12 +46,14 @@ class UserViewModel : ViewModel() {
     private val reportRepository by lazy {
         RetrofitAPI.service(URL.BASE.value).create(ReportRepository::class.java)
     }
+
     @SuppressLint("StaticFieldLeak")
     lateinit var context: Context;
     private lateinit var sharedPreferences: SharedPreferences;
     val userCurrent = MutableLiveData<UserModel?>(null);
     var isLoggedIn by mutableStateOf(false);
     var accessToken by mutableStateOf("");
+    var tfa by mutableStateOf(false);
 
     fun init(context: Context) {
         this.context = context;
@@ -65,6 +70,7 @@ class UserViewModel : ViewModel() {
         sharedPreferences.edit()
             .putString(SharedPreferencesAuthKey.ACCESS_TOKEN, accessToken)
             .putBoolean(SharedPreferencesAuthKey.IS_LOGGED_IN, isLoggedIn)
+            .putBoolean(SharedPreferencesAuthKey.TFA, tfa)
             .apply()
     }
 
@@ -106,18 +112,31 @@ class UserViewModel : ViewModel() {
                             if (response.isSuccessful) {
                                 val res: ResponseLayout<LoginResponse>? = response.body()
                                 if (res?.status == true) {
-                                    userCurrent.value = res.data?.user
-                                    isLoggedIn = true
-                                    accessToken = res?.data?.accessToken.toString()
-                                    saveSharedPreferences()
-                                    Navigate(Router.HomeScreen)
+                                    val user: UserModel? = res.data?.user;
+                                    val token: String = res?.data?.token.toString();
+                                    tfa = res?.data?.tfa == true
+                                    if (tfa) {
+                                        Navigate(
+                                            Router.OTPScreen.setArgs(
+                                                user?.username.toString(),
+                                                token
+                                            )
+                                        )
+                                    } else {
+                                        userCurrent.value = user
+                                        isLoggedIn = true
+                                        accessToken = token
+                                        saveSharedPreferences()
+                                        Navigate(Router.HomeScreen)
+                                    }
                                 }
-                                Toast.makeText(
-                                    context,
-                                    res?.message ?: "Login Data Error",
-                                    Toast.LENGTH_LONG
-                                ).show()
                             }
+                            Toast.makeText(
+                                context,
+                                response.body()?.message ?: "Error",
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
                             activeButton()
                         }
 
@@ -132,6 +151,51 @@ class UserViewModel : ViewModel() {
                         }
                     }
                     )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun verifyOTP(verifyOTPRequest: VerifyOTPRequest, activeButton: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                userRepository.verifyOTP(verifyOTPRequest)!!
+                    .enqueue(object : Callback<ResponseLayout<VerifyOTPDataResponse?>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<VerifyOTPDataResponse?>>,
+                            response: Response<ResponseLayout<VerifyOTPDataResponse?>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<VerifyOTPDataResponse?>? = response.body()
+                                if (res?.status == true) {
+                                    userCurrent.value = res?.data?.user
+                                    isLoggedIn = true
+                                    accessToken = res?.data?.token.toString()
+                                    saveSharedPreferences()
+                                    Navigate(Router.HomeScreen)
+                                }
+                            }
+                            Toast.makeText(
+                                context,
+                                response.body()?.message ?: "Error",
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                            activeButton()
+                            Log.e("verify-otp", response.toString())
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<VerifyOTPDataResponse?>>,
+                            t: Throwable
+                        ) {
+                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                                .show()
+                            activeButton()
+                            Log.e("verify-otp-error", t.toString())
+                        }
+                    })
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -157,7 +221,8 @@ class UserViewModel : ViewModel() {
                                 if (res?.status == true) {
                                     Navigate(Router.LoginScreen)
                                 }
-                            }
+                            } else Toast.makeText(context, response.message(), Toast.LENGTH_LONG)
+                                .show()
                             activeButton()
                         }
 
@@ -182,7 +247,7 @@ class UserViewModel : ViewModel() {
         Navigate(Router.HomeScreen)
     }
 
-    fun report(report: ReportModel,activeButtonSubmit:()->Unit) {
+    fun report(report: ReportModel, activeButtonSubmit: () -> Unit) {
         viewModelScope.launch {
             try {
                 reportRepository.create(report)!!.enqueue(object : Callback<ResponseLayout<Any>> {
@@ -213,6 +278,70 @@ class UserViewModel : ViewModel() {
                 })
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+        }
+    }
+
+    fun changeTFA(value: Boolean) {
+        viewModelScope.launch {
+            try {
+                userRepository.changeTFA()!!.enqueue(object : Callback<ResponseLayout<Any>> {
+                    override fun onResponse(
+                        call: Call<ResponseLayout<Any>>,
+                        response: Response<ResponseLayout<Any>>
+                    ) {
+                        if (response.isSuccessful) {
+                            val res: ResponseLayout<Any>? = response.body();
+                            if (res?.status == true) {
+                                tfa = value
+                            }
+                            Toast.makeText(context, res?.message, Toast.LENGTH_LONG)
+                                .show()
+                        } else Toast.makeText(context, response.message(), Toast.LENGTH_LONG)
+                            .show()
+                    }
+
+                    override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
+                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                })
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun sendOTP(token: String, activeButtonSubmit: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                userRepository.sendOTP(token)!!.enqueue(object : Callback<ResponseLayout<Any>> {
+                    override fun onResponse(
+                        call: Call<ResponseLayout<Any>>,
+                        response: Response<ResponseLayout<Any>>
+                    ) {
+                        if (response.isSuccessful) {
+                            val res: ResponseLayout<Any>? = response.body()
+                            if (res?.status == false) {
+                                Navigate(Router.LoginScreen)
+                            }
+                            Toast.makeText(context, res?.message, Toast.LENGTH_LONG)
+                                .show()
+                        } else Toast.makeText(context, response.message(), Toast.LENGTH_LONG)
+                            .show()
+                        activeButtonSubmit()
+                        Log.e("send-otp", response.toString())
+                    }
+
+                    override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
+                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                            .show()
+                        activeButtonSubmit()
+                        Log.e("send-otp-error", t.toString())
+                    }
+                })
+            } catch (e: Exception) {
+               Log.e("error-send-otp",e.toString())
             }
         }
     }

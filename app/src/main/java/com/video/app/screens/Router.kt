@@ -13,4 +13,9 @@ sealed class Router(val id: Int, val route: String) {
     data object ProfileScreen : Router(getIdIn(), "profile")
     data object SearchScreen:Router(getIdIn(),"search")
     data object ReportScreen:Router(getIdIn(),"report")
+    data object OTPScreen:Router(getIdIn(),"otp"){
+        fun setArgs(email:String,token:String):String{
+            return "${route}/${email}/${token}"
+        }
+    }
 }

@@ -82,10 +82,28 @@ class SettingScreen {
                         }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    if (userViewModel.isLoggedIn)
+                    if (userViewModel.isLoggedIn) {
+                        ItemContainer(
+                            contentLeft = {
+                                TextIconImage(
+                                    text = "TFA",
+                                    painter = painterResource(id = R.drawable.otp_icon)
+                                )
+                            },
+                            contentRight = {
+                                SwitchComponent(
+                                    modifier = Modifier.padding(10.dp, 0.dp),
+                                    checked = userViewModel.tfa,
+                                    onCheckedChange = {
+                                        userViewModel.changeTFA(it)
+                                    }
+                                )
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
                         BtnText(onClick = { userViewModel.logout() }, text = "Logout")
-                    else
-                        BtnText(onClick = { Navigate(Router.LoginScreen) }, text = "Login")
+                    } else
+                        BtnText(onClick = { Navigate(Router.LoginScreen.route) }, text = "Login")
                     Spacer(modifier = Modifier.height(10.dp))
                     TextButton(
                         onClick = { Navigate(Router.ReportScreen) },

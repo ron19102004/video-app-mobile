@@ -12,7 +12,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 sealed class URL(val value: String) {
-    data object BASE : URL("https://ce92-171-225-185-116.ngrok-free.app/")
+    data object BASE : URL("https://0b4c-116-98-249-2.ngrok-free.app/")
 }
 
 @SuppressLint("StaticFieldLeak")
@@ -21,6 +21,7 @@ object RetrofitAPI {
     fun init(context: Context) {
         _context = context;
     }
+
     private val client = OkHttpClient.Builder()
         .addInterceptor { chain ->
             val originalRequest = chain.request()
@@ -44,7 +45,7 @@ object RetrofitAPI {
         val path = request.url.encodedPath
         Log.e("path-log", path)
         return when (path) {
-            "/users/info" -> true
+            "/users/info", "/auth/change-TFA" -> true
             else -> false
         }
     }

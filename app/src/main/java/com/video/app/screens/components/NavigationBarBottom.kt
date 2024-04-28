@@ -29,7 +29,7 @@ fun NavigationBarBottom(userViewModel: UserViewModel) {
                 },
                 onClick = {
                     if (NavigationState.listRouter[index].id == Router.ProfileScreen.id && !userViewModel.isLoggedIn) {
-                        Navigate(Router.LoginScreen)
+                        Navigate(Router.LoginScreen.route)
                     } else {
                         NavigationState.navSelected = NavigationState.listRouter[index].id
                         Navigate(NavigationState.listRouter[index])
