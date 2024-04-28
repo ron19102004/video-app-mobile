@@ -32,7 +32,7 @@ val md_theme_light_surfaceTint = Color(0xFF006C4C)
 val md_theme_light_outlineVariant = Color(0xFFBFC9C2)
 val md_theme_light_scrim = Color(0xFF000000)
 
-val md_theme_dark_primary = Color(0xFF6CDBAC)
+val md_theme_dark_primary = Color(0xFFFFFFFF)
 val md_theme_dark_onPrimary = Color(0xFF003826)
 val md_theme_dark_primaryContainer = Color(0xFF005138)
 val md_theme_dark_onPrimaryContainer = Color(0xFF89F8C7)
@@ -48,7 +48,7 @@ val md_theme_dark_error = Color(0xFFFFB4AB)
 val md_theme_dark_errorContainer = Color(0xFF93000A)
 val md_theme_dark_onError = Color(0xFF690005)
 val md_theme_dark_onErrorContainer = Color(0xFFFFDAD6)
-val md_theme_dark_background = Color(0xFF191C1A)
+val md_theme_dark_background = Color(0xFF000000)
 val md_theme_dark_onBackground = Color(0xFFE1E3DF)
 val md_theme_dark_surface = Color(0xFF191C1A)
 val md_theme_dark_onSurface = Color(0xFFE1E3DF)
@@ -62,7 +62,8 @@ val md_theme_dark_surfaceTint = Color(0xFF6CDBAC)
 val md_theme_dark_outlineVariant = Color(0xFF404943)
 val md_theme_dark_scrim = Color(0xFF000000)
 object ColorCustom{
-    val bgContainer_dark = Color(0xFF212522)
-    val bgContainer_light = Color(0xFFB7D5C7)
+    val bgContainer_dark = Color(0xFF0F0F0F)
+
+    val bgContainer_light = Color(0xFFBFE4D2)
 
 }

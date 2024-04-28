@@ -167,7 +167,7 @@ class LoginScreen {
                                 text = "Don't have an account? ",
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(text = "Register here")
+                            Text(text = "Register here", color = MaterialTheme.colorScheme.surfaceTint)
                         }
                     }
                 }

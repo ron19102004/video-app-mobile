@@ -23,6 +23,7 @@ fun BtnText(
     text: String,
     textStyle: TextStyle = TextStyle(
         fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.surfaceTint
     ),
     shape: RoundedCornerShape? = null,
     height: Dp? = null,

@@ -153,6 +153,9 @@ class UserViewModel : ViewModel() {
                     )
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
+                activeButton()
             }
         }
     }
@@ -198,6 +201,9 @@ class UserViewModel : ViewModel() {
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
+                activeButton()
             }
         }
     }
@@ -234,6 +240,9 @@ class UserViewModel : ViewModel() {
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
+                activeButton()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
             }
         }
     }
@@ -278,11 +287,14 @@ class UserViewModel : ViewModel() {
                 })
             } catch (e: Exception) {
                 e.printStackTrace()
+                activeButtonSubmit()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
             }
         }
     }
 
-    fun changeTFA(value: Boolean) {
+    fun changeTFA(value: Boolean, activeButton: () -> Unit = {}) {
         viewModelScope.launch {
             try {
                 userRepository.changeTFA()!!.enqueue(object : Callback<ResponseLayout<Any>> {
@@ -299,15 +311,20 @@ class UserViewModel : ViewModel() {
                                 .show()
                         } else Toast.makeText(context, response.message(), Toast.LENGTH_LONG)
                             .show()
+                        activeButton()
                     }
 
                     override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
                         Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                             .show()
+                        activeButton()
                     }
                 })
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
+                activeButton()
             }
         }
     }
@@ -341,7 +358,10 @@ class UserViewModel : ViewModel() {
                     }
                 })
             } catch (e: Exception) {
-               Log.e("error-send-otp",e.toString())
+                Log.e("error-send-otp", e.toString())
+                activeButtonSubmit()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
             }
         }
     }

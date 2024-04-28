@@ -280,7 +280,11 @@ class RegisterScreen {
                                 password.length >= 8
                             ) {
                                 enabledButton = false;
-                                Toast.makeText(userViewModel.context, "Logging...", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    userViewModel.context,
+                                    "Logging...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 userViewModel.register(
                                     RegisterRequest(
                                         username, password, fullName, email, phone
@@ -304,7 +308,7 @@ class RegisterScreen {
                                 text = "Already an account? ",
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(text = "Login here")
+                            Text(text = "Login here", color = MaterialTheme.colorScheme.surfaceTint)
                         }
                     }
                 }

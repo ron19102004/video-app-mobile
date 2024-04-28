@@ -11,7 +11,8 @@ class UserModel(
     var username: String? = null,
     var role: String? = null,
     var confirmed: Boolean? = null,
-    var isTwoFactorAuthentication: Boolean? = null
+    var isTwoFactorAuthentication: Boolean? = null,
+    var imageURL:String?=null
 )
 
 //DTO

@@ -9,15 +9,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.video.app.navController
+import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
 
 class SearchScreen {
@@ -33,6 +36,9 @@ class SearchScreen {
             mutableStateOf("")
         }
         SearchBar(
+            colors = SearchBarDefaults.colors(
+                containerColor = if (UiState.darkMode) Color.Black else Color.White
+            ),
             query = query,
             onQueryChange = { query = it },
             onSearch = {},

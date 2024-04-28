@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.video.app.screens.components.NavigationBarBottom
+import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
 
 @Composable
@@ -18,11 +20,14 @@ fun MainLayout(
     content: @Composable () -> Unit
 ) {
     Scaffold(
+        containerColor = if (UiState.darkMode) Color.Black else Color.White,
         bottomBar = { NavigationBarBottom(userViewModel) }
     ) {
-        Column(modifier = modifier
-            .fillMaxSize()
-            .padding(it)) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
             content()
         }
     }
