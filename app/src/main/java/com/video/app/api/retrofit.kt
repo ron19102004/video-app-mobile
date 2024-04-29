@@ -26,7 +26,7 @@ object URL {
     fun init(context: Context) {
         sharedPreferences = context.getSharedPreferences(ROOT_SP, Context.MODE_PRIVATE)
         path = sharedPreferences.getString(PATH_URL_API, PATH_URL_DEFAULT).toString()
-        Toast.makeText(context, path, Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Url api current: $path", Toast.LENGTH_SHORT).show()
     }
 
     fun save(pathNew: String) {

@@ -160,7 +160,7 @@ class SettingScreen {
                 showDevTools = false
             }, sheetState = stateDevTools) {
                 DevTools(hideModal = {
-                    scope.launch { stateDevTools.hide() }
+                    showDevTools = false
                 })
             }
 
@@ -184,13 +184,21 @@ class SettingScreen {
             )
             Spacer(modifier = Modifier.height(10.dp))
             BtnText(onClick = {
-                URL.save(urlApi)
-                hideModal()
-                Toast.makeText(
-                    userViewModel.context,
-                    "URL is changed! Off and on app again!",
-                    Toast.LENGTH_LONG
-                ).show()
+                if (urlApi.isBlank()) {
+                    Toast.makeText(
+                        userViewModel.context,
+                        "URL must not blank",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    URL.save(urlApi)
+                    hideModal()
+                    Toast.makeText(
+                        userViewModel.context,
+                        "URL is changed! Off and on app again!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }, text = "Change")
         }
     }
