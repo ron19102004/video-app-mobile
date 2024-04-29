@@ -3,9 +3,11 @@ package com.video.app
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -47,6 +49,10 @@ fun Navigate(route: String) {
 }
 
 class MainActivity : ComponentActivity() {
+    private var initialized = mutableStateOf(false)
+    private lateinit var userViewModel: UserViewModel
+    private lateinit var categoryAndCountryViewModel: CategoryAndCountryViewModel
+
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,19 +65,19 @@ class MainActivity : ComponentActivity() {
                     notificationPermissionState.launchPermissionRequest()
                 }
             }
-            //ViewModel init
-            URL.init(this)
-            RetrofitAPI.init(this)
-            UiState.init(this)
-            val categoryAndCountryViewModel: CategoryAndCountryViewModel = viewModel()
-            val userViewModel: UserViewModel = viewModel()
-            userViewModel.init(this);
-            navController = rememberNavController()
-            //Navigation Graph
+            if (!initialized.value) {
+                URL.init(this)
+                RetrofitAPI.init(this)
+                UiState.init(this)
+                categoryAndCountryViewModel = viewModel()
+                userViewModel = viewModel()
+                userViewModel.init(this);
+                navController = rememberNavController()
+                initialized.value = true
+            }
             MobileTheme(darkTheme = UiState.darkMode) {
                 NavHost(
-                    navController = navController,
-                    startDestination = Router.HomeScreen.route
+                    navController = navController, startDestination = Router.HomeScreen.route
                 ) {
                     composable(route = Router.HomeScreen.route) {
                         HomeScreen().Screen(
@@ -83,17 +89,13 @@ class MainActivity : ComponentActivity() {
                         LoginScreen().Screen(userViewModel = userViewModel)
                     }
                     composable(route = Router.OTPScreen.route + "/{email}/{token}",
-                        arguments = listOf(
-                            navArgument("email") {
-                                type = NavType.StringType;
-                                nullable = false
-                            },
-                            navArgument("token") {
-                                type = NavType.StringType;
-                                nullable = false
-                            }
-                        )
-                    ) {
+                        arguments = listOf(navArgument("email") {
+                            type = NavType.StringType;
+                            nullable = false
+                        }, navArgument("token") {
+                            type = NavType.StringType;
+                            nullable = false
+                        })) {
                         OTPScreen().Screen(
                             userViewModel = userViewModel,
                             email = it.arguments?.getString("email")!!,
