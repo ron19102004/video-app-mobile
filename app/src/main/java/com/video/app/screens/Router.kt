@@ -18,4 +18,5 @@ sealed class Router(val id: Int, val route: String) {
             return "${route}/${email}/${token}"
         }
     }
+    data object VIPRegisterScreen:Router(getIdIn(),"vip")
 }

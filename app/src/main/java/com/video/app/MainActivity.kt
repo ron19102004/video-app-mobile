@@ -18,12 +18,14 @@ import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.video.app.api.RetrofitAPI
+import com.video.app.api.URL
 import com.video.app.screens.HomeScreen
 import com.video.app.screens.ProfileScreen
 import com.video.app.screens.ReportScreen
 import com.video.app.screens.Router
 import com.video.app.screens.SearchScreen
 import com.video.app.screens.SettingScreen
+import com.video.app.screens.VIPRegisterScreen
 import com.video.app.screens.auth.LoginScreen
 import com.video.app.screens.auth.OTPScreen
 import com.video.app.screens.auth.RegisterScreen
@@ -58,6 +60,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             //ViewModel init
+            URL.init(this)
             RetrofitAPI.init(this)
             UiState.init(this)
             val categoryAndCountryViewModel: CategoryAndCountryViewModel = viewModel()
@@ -111,6 +114,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(route = Router.ReportScreen.route) {
                         ReportScreen().Screen(userViewModel = userViewModel)
+                    }
+                    composable(route = Router.VIPRegisterScreen.route) {
+                        VIPRegisterScreen().Screen(userViewModel = userViewModel)
                     }
                 }
             }

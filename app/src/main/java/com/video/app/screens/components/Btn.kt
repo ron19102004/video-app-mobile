@@ -3,6 +3,7 @@ package com.video.app.screens.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +28,7 @@ fun BtnText(
     ),
     shape: RoundedCornerShape? = null,
     height: Dp? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     ElevatedButton(
         enabled = enabled,

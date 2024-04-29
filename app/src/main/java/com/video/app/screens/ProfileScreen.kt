@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ExitToApp
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
@@ -46,14 +48,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.asFlow
 import coil.compose.AsyncImage
+import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.PlaylistModel
 import com.video.app.api.models.Privacy
 import com.video.app.api.models.UserModel
+import com.video.app.api.models.VIP
 import com.video.app.config.CONSTANT
 import com.video.app.screens.components.Heading
 import com.video.app.screens.layouts.MainLayout
@@ -64,11 +69,13 @@ import com.video.app.ui.theme.ColorCustom
 class ProfileScreen {
     private lateinit var userViewModel: UserViewModel
     private lateinit var userCurrent: State<UserModel?>;
+    private lateinit var vip: State<VIP?>
 
     @Composable
     fun Screen(userViewModel: UserViewModel) {
         this.userViewModel = userViewModel
         userCurrent = userViewModel.userCurrent.asFlow().collectAsState(initial = null)
+        vip = userViewModel.vip.asFlow().collectAsState(initial = null)
         if (userViewModel.isLoggedIn) {
             if (userCurrent != null)
                 Loaded()
@@ -101,6 +108,18 @@ class ProfileScreen {
                     }
                     Spacer(modifier = Modifier.width(5.dp))
                     Heading(text = "Profile", size = CONSTANT.UI.TEXT_SIZE.XL)
+                    if (vip != null && vip.value?.active == true) {
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Box(modifier = painterModifier) {
+                            Image(
+                                painter = painterResource(id = R.drawable.vip_),
+                                contentDescription = null,
+                                contentScale = ContentScale.Fit,
+                                modifier = painterModifier
+                            )
+                        }
+                    }
+
                 }
                 IconButton(onClick = { userViewModel.logout() }) {
                     Box(modifier = painterModifier) {
@@ -220,11 +239,11 @@ class ProfileScreen {
     }
 
     @Composable
-    private fun PlaylistCard(playlistModel: PlaylistModel, onClick: () -> Unit) {
+    private fun PlaylistCard(playlistModel: PlaylistModel, onClick: (Long) -> Unit) {
         val painterImage = painterResource(id = R.drawable.video_bg)
         Column(modifier = Modifier
             .width(200.dp)
-            .clickable { onClick() }) {
+            .clickable { onClick(playlistModel?.id ?: 0) }) {
             val imgModifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
@@ -259,6 +278,9 @@ class ProfileScreen {
 
     @Composable
     private fun OptionsAccount() {
+        val (urVipAccountOpen, setUrVipAccountOpen) = remember {
+            mutableStateOf(false)
+        }
         Column {
             OptionAccountCard(
                 painter = painterResource(id = R.drawable.movie),
@@ -267,29 +289,74 @@ class ProfileScreen {
             OptionAccountCard(
                 painter = painterResource(id = R.drawable.vip),
                 "Your VIP account",
-                onClick = {})
+                onClick = {
+                    if (vip != null && vip.value?.active == true) {
+                        setUrVipAccountOpen(!urVipAccountOpen)
+                    } else
+                        Navigate(Router.VIPRegisterScreen)
+                },
+                hasMore = true,
+                isMore = urVipAccountOpen
+            )
+            if (urVipAccountOpen) {
+                YourVipAccountOption()
+            }
         }
     }
 
     @Composable
-    private fun OptionAccountCard(painter: Painter, text: String, onClick: () -> Unit) {
+    private fun YourVipAccountOption() {
+        Column(modifier = Modifier.padding(30.dp, 0.dp, 0.dp, 0.dp)) {
+            OptionAccountCard(
+                text = "Cancel VIP account",
+                onClick = { /*TODO*/ },
+                fontWeight = FontWeight.Medium,
+            )
+        }
+    }
+
+    @Composable
+    private fun OptionAccountCard(
+        painter: Painter? = null,
+        text: String,
+        onClick: () -> Unit,
+        padding: Dp = 0.dp,
+        fontWeight: FontWeight = FontWeight.SemiBold,
+        hasMore: Boolean = false,
+        isMore: Boolean = false
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
+                .padding(padding)
                 .clickable { onClick() },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val iconModifier = Modifier.size(30.dp)
-            Box(modifier = iconModifier) {
-                Image(
-                    painter = painter,
-                    contentDescription = null,
-                    modifier = iconModifier
-                )
+            if (painter != null) {
+                val iconModifier = Modifier.size(30.dp)
+                Box(modifier = iconModifier) {
+                    Image(
+                        painter = painter,
+                        contentDescription = null,
+                        modifier = iconModifier
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(10.dp))
-            Text(text = text, fontWeight = FontWeight.SemiBold)
+            Text(text = text, fontWeight = fontWeight)
+            if (hasMore) {
+                if (isMore)
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowDown,
+                        contentDescription = null
+                    )
+                else
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowRight,
+                        contentDescription = null
+                    )
+            }
         }
     }
 

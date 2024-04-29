@@ -15,12 +15,13 @@ import com.video.app.Navigate
 import com.video.app.api.ResponseLayout
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
+import com.video.app.api.models.InfoUserResponse
 import com.video.app.api.models.LoginRequest
 import com.video.app.api.models.LoginResponse
 import com.video.app.api.models.RegisterRequest
 import com.video.app.api.models.ReportModel
 import com.video.app.api.models.UserModel
-import com.video.app.api.models.VerifyOTPDataResponse
+import com.video.app.api.models.VIP
 import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.api.repositories.ReportRepository
 import com.video.app.api.repositories.UserRepository
@@ -30,7 +31,6 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.create
 
 object SharedPreferencesAuthKey {
     const val ROOT = "auth"
@@ -41,10 +41,10 @@ object SharedPreferencesAuthKey {
 
 class UserViewModel : ViewModel() {
     private val userRepository by lazy {
-        RetrofitAPI.service(URL.BASE.value).create(UserRepository::class.java)
+        RetrofitAPI.service(URL.path).create(UserRepository::class.java)
     }
     private val reportRepository by lazy {
-        RetrofitAPI.service(URL.BASE.value).create(ReportRepository::class.java)
+        RetrofitAPI.service(URL.path).create(ReportRepository::class.java)
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -54,6 +54,7 @@ class UserViewModel : ViewModel() {
     var isLoggedIn by mutableStateOf(false);
     var accessToken by mutableStateOf("");
     var tfa by mutableStateOf(false);
+    var vip = MutableLiveData<VIP?>(null)
 
     fun init(context: Context) {
         this.context = context;
@@ -77,23 +78,29 @@ class UserViewModel : ViewModel() {
     private fun loadUserFormToken() {
         viewModelScope.launch {
             try {
-                userRepository.info()!!.enqueue(object : Callback<ResponseLayout<UserModel>> {
-                    override fun onResponse(
-                        call: Call<ResponseLayout<UserModel>>,
-                        response: Response<ResponseLayout<UserModel>>
-                    ) {
-                        if (response.isSuccessful) {
-                            val res: ResponseLayout<UserModel>? = response.body()
-                            userCurrent.value = res?.data
-                        } else logout()
-                    }
+                userRepository.info()!!
+                    .enqueue(object : Callback<ResponseLayout<InfoUserResponse>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<InfoUserResponse>>,
+                            response: Response<ResponseLayout<InfoUserResponse>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<InfoUserResponse>? = response.body()
+                                userCurrent.value = res?.data?.user
+                                vip.value = res?.data?.vip
+                            } else logout()
+                        }
 
-                    override fun onFailure(call: Call<ResponseLayout<UserModel>>, t: Throwable) {
-                        Log.e("loadUserFormToken-error", t.message.toString())
-                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG).show()
-                    }
+                        override fun onFailure(
+                            call: Call<ResponseLayout<InfoUserResponse>>,
+                            t: Throwable
+                        ) {
+                            Log.e("loadUserFormToken-error", t.message.toString())
+                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                                .show()
+                        }
 
-                })
+                    })
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -124,6 +131,7 @@ class UserViewModel : ViewModel() {
                                         )
                                     } else {
                                         userCurrent.value = user
+                                        vip.value = res?.data?.vip
                                         isLoggedIn = true
                                         accessToken = token
                                         saveSharedPreferences()
@@ -156,6 +164,7 @@ class UserViewModel : ViewModel() {
                 Toast.makeText(context, e.message, Toast.LENGTH_LONG)
                     .show()
                 activeButton()
+
             }
         }
     }
@@ -164,15 +173,16 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 userRepository.verifyOTP(verifyOTPRequest)!!
-                    .enqueue(object : Callback<ResponseLayout<VerifyOTPDataResponse?>> {
+                    .enqueue(object : Callback<ResponseLayout<LoginResponse?>> {
                         override fun onResponse(
-                            call: Call<ResponseLayout<VerifyOTPDataResponse?>>,
-                            response: Response<ResponseLayout<VerifyOTPDataResponse?>>
+                            call: Call<ResponseLayout<LoginResponse?>>,
+                            response: Response<ResponseLayout<LoginResponse?>>
                         ) {
                             if (response.isSuccessful) {
-                                val res: ResponseLayout<VerifyOTPDataResponse?>? = response.body()
+                                val res: ResponseLayout<LoginResponse?>? = response.body()
                                 if (res?.status == true) {
                                     userCurrent.value = res?.data?.user
+                                    vip.value = res?.data?.vip
                                     isLoggedIn = true
                                     accessToken = res?.data?.token.toString()
                                     saveSharedPreferences()
@@ -190,7 +200,7 @@ class UserViewModel : ViewModel() {
                         }
 
                         override fun onFailure(
-                            call: Call<ResponseLayout<VerifyOTPDataResponse?>>,
+                            call: Call<ResponseLayout<LoginResponse?>>,
                             t: Throwable
                         ) {
                             Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
@@ -362,6 +372,46 @@ class UserViewModel : ViewModel() {
                 activeButtonSubmit()
                 Toast.makeText(context, e.message, Toast.LENGTH_LONG)
                     .show()
+            }
+        }
+    }
+
+    fun registerVIP(month: Int, activeButton: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                userRepository.registerVIP(month)!!
+                    .enqueue(object : Callback<ResponseLayout<VIP?>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<VIP?>>,
+                            response: Response<ResponseLayout<VIP?>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<VIP?>? = response.body()
+                                if (res?.status == true) {
+                                    vip.value = res?.data
+                                    Navigate(Router.HomeScreen)
+                                }
+                            }
+                            Toast.makeText(
+                                context,
+                                response.body()?.message ?: "Error",
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                            activeButton()
+                        }
+
+                        override fun onFailure(call: Call<ResponseLayout<VIP?>>, t: Throwable) {
+                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                                .show()
+                            activeButton()
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
+                activeButton()
             }
         }
     }

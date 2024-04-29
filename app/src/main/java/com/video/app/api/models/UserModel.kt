@@ -1,6 +1,7 @@
 package com.video.app.api.models
 
 import com.squareup.moshi.Json
+import java.util.Date
 
 //DEFINE MODEL
 class UserModel(
@@ -12,7 +13,14 @@ class UserModel(
     var role: String? = null,
     var confirmed: Boolean? = null,
     var isTwoFactorAuthentication: Boolean? = null,
-    var imageURL:String?=null
+    var imageURL: String? = null
+)
+
+class VIP(
+    var id: Long? = null,
+    var active: Boolean? = false,
+    var issuedAt: String? = null,
+    var expiredAt: String? = null
 )
 
 //DTO
@@ -26,7 +34,8 @@ data class LoginResponse(
     val token: String,
     val user: UserModel,
     @Json(name = "TFA")
-    val tfa: Boolean
+    val tfa: Boolean,
+    val vip: VIP? = null
 )
 
 data class RegisterRequest(
@@ -41,8 +50,8 @@ data class VerifyOTPRequest(
     val otp: String,
     val token: String
 )
-data class VerifyOTPDataResponse(
-    @Json(name = "token")
-    val token: String,
-    val user: UserModel,
+
+data class InfoUserResponse(
+    var vip: VIP? = null,
+    var user: UserModel? = null
 )

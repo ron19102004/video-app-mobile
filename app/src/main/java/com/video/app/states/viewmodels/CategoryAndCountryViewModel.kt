@@ -16,7 +16,7 @@ import retrofit2.Response
 
 class CategoryAndCountryViewModel : ViewModel() {
     private val repository by lazy {
-        RetrofitAPI.service(URL.BASE.value).create(CategoryAndCountryRepository::class.java)
+        RetrofitAPI.service(URL.path).create(CategoryAndCountryRepository::class.java)
     }
     var categories = MutableLiveData<List<CategoryModel>?>(emptyList())
     var countries = MutableLiveData<List<CountryModel>?>(emptyList())

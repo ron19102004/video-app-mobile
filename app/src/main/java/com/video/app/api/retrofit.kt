@@ -2,7 +2,12 @@ package com.video.app.api
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.video.app.states.viewmodels.SharedPreferencesAuthKey
@@ -10,9 +15,26 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import kotlin.system.exitProcess
 
-sealed class URL(val value: String) {
-    data object BASE : URL("https://1fa1-2402-800-62f6-c0ca-19f2-673c-fc44-c70d.ngrok-free.app/")
+object URL {
+    var path by mutableStateOf("https://dc54-116-98-249-2.ngrok-free.app/")
+    private lateinit var sharedPreferences: SharedPreferences
+    private const val ROOT_SP = "url_root";
+    private const val PATH_URL_API: String = "path_url_api";
+    private const val PATH_URL_DEFAULT: String = "https://dc54-116-98-249-2.ngrok-free.app/"
+    fun init(context: Context) {
+        sharedPreferences = context.getSharedPreferences(ROOT_SP, Context.MODE_PRIVATE)
+        path = sharedPreferences.getString(PATH_URL_API, PATH_URL_DEFAULT).toString()
+        Toast.makeText(context, path, Toast.LENGTH_SHORT).show()
+    }
+
+    fun save(pathNew: String) {
+        pathNew
+        sharedPreferences.edit()
+            .putString(PATH_URL_API, pathNew)
+            .apply()
+    }
 }
 
 @SuppressLint("StaticFieldLeak")
@@ -43,9 +65,8 @@ object RetrofitAPI {
 
     private fun isTokenRequired(request: Request): Boolean {
         val path = request.url.encodedPath
-        Log.e("path-log", path)
         return when (path) {
-            "/users/info", "/auth/change-TFA" -> true
+            "/users/info", "/auth/change-TFA", "/users/vip/register" -> true
             else -> false
         }
     }
