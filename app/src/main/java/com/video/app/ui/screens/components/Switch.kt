@@ -1,12 +1,11 @@
-package com.video.app.screens.components
+package com.video.app.ui.screens.components
 
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.video.app.states.objects.UiState
-import com.video.app.ui.theme.md_theme_dark_inversePrimary
+import com.video.app.ui.theme.AppColor
 
 @Composable
 fun SwitchComponent(
@@ -18,8 +17,10 @@ fun SwitchComponent(
         checked = checked,
         onCheckedChange = onCheckedChange,
         colors = SwitchDefaults.colors(
-            checkedTrackColor = md_theme_dark_inversePrimary,
-            checkedThumbColor = Color.White
+            checkedTrackColor = AppColor.primary_content,
+            checkedThumbColor = Color.White,
+            uncheckedTrackColor = AppColor.primary_text,
+            uncheckedThumbColor = AppColor.background_container
         ),
         modifier = modifier
     )

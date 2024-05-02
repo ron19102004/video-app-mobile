@@ -1,17 +1,15 @@
-package com.video.app.screens.layouts
+package com.video.app.ui.screens.layouts
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.video.app.screens.components.NavigationBarBottom
-import com.video.app.states.objects.UiState
+import com.video.app.ui.screens.components.NavigationBarBottom
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.ui.theme.AppColor
 
 @Composable
 fun MainLayout(
@@ -20,7 +18,7 @@ fun MainLayout(
     content: @Composable () -> Unit
 ) {
     Scaffold(
-        containerColor = if (UiState.darkMode) Color.Black else Color.White,
+        containerColor = AppColor.background,
         bottomBar = { NavigationBarBottom(userViewModel) }
     ) {
         Column(

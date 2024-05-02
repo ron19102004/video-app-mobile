@@ -1,6 +1,8 @@
-package com.video.app.screens
+package com.video.app.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -19,6 +21,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,10 +41,11 @@ import com.video.app.api.models.ReportModel
 import com.video.app.config.CONSTANT
 import com.video.app.config.ValidRegex
 import com.video.app.navController
-import com.video.app.screens.components.BtnText
-import com.video.app.screens.components.Heading
-import com.video.app.screens.components.Input
+import com.video.app.ui.screens.components.BtnText
+import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.components.Input
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.ui.theme.AppColor
 
 class ReportScreen {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -71,6 +76,7 @@ class ReportScreen {
             enabledButtonSubmit = false;
         }
         Scaffold(
+            containerColor = AppColor.background,
             topBar = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -80,7 +86,7 @@ class ReportScreen {
                     IconButton(onClick = {
                         navController.popBackStack()
                     }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = AppColor.primary_text)
                     }
                 }
             }
@@ -166,6 +172,16 @@ class ReportScreen {
                         },
                         text = "Submit report"
                     )
+                    TextButton(
+                        onClick = {
+                            val uri = Uri.parse(CONSTANT.APP.FACEBOOK_ADMIN_URL)
+                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                            userViewModel.context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "Admins Facebook", color = AppColor.primary_content)
+                    }
                 }
             }
         }

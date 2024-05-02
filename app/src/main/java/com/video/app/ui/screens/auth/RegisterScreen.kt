@@ -1,4 +1,4 @@
-package com.video.app.screens.auth
+package com.video.app.ui.screens.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -41,11 +41,12 @@ import com.video.app.api.models.LoginRequest
 import com.video.app.api.models.RegisterRequest
 import com.video.app.config.CONSTANT
 import com.video.app.config.ValidRegex
-import com.video.app.screens.Router
-import com.video.app.screens.components.BtnText
-import com.video.app.screens.components.Input
-import com.video.app.screens.layouts.AuthLayout
+import com.video.app.ui.screens.Router
+import com.video.app.ui.screens.components.BtnText
+import com.video.app.ui.screens.components.Input
+import com.video.app.ui.screens.layouts.AuthLayout
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.ui.theme.AppColor
 
 class RegisterScreen {
     @Composable
@@ -189,7 +190,8 @@ class RegisterScreen {
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
                             fontSize = CONSTANT.UI.TEXT_SIZE.LG,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = AppColor.primary_text
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -306,9 +308,9 @@ class RegisterScreen {
                         ) {
                             Text(
                                 text = "Already an account? ",
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = AppColor.primary_text
                             )
-                            Text(text = "Login here", color = MaterialTheme.colorScheme.surfaceTint)
+                            Text(text = "Login here", color = AppColor.primary_content)
                         }
                     }
                 }

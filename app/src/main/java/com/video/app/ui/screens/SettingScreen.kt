@@ -1,4 +1,4 @@
-package com.video.app.screens
+package com.video.app.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -17,8 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Build
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,7 +24,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -49,14 +47,14 @@ import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.URL
 import com.video.app.config.CONSTANT
-import com.video.app.screens.components.BtnText
-import com.video.app.screens.components.Heading
-import com.video.app.screens.components.Input
-import com.video.app.screens.components.SwitchComponent
-import com.video.app.screens.layouts.MainLayout
+import com.video.app.ui.screens.components.BtnText
+import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.components.Input
+import com.video.app.ui.screens.components.SwitchComponent
+import com.video.app.ui.screens.layouts.MainLayout
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
-import com.video.app.ui.theme.ColorCustom
+import com.video.app.ui.theme.AppColor
 import kotlinx.coroutines.launch
 
 class SettingScreen {
@@ -68,7 +66,6 @@ class SettingScreen {
         this.userViewModel = userViewModel
         var showDevTools by remember { mutableStateOf(false) }
         val stateDevTools = rememberModalBottomSheetState()
-        val scope = rememberCoroutineScope()
         MainLayout(userViewModel = userViewModel) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -87,27 +84,9 @@ class SettingScreen {
                 Spacer(modifier = Modifier.width(5.dp))
                 Heading(text = "Settings", size = CONSTANT.UI.TEXT_SIZE.XL)
             }
-            Divider()
+            Divider(color = AppColor.background_container)
             LazyColumn {
                 item {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ItemContainer(
-                        contentLeft = {
-                            TextIconImage(
-                                text = "Dark mode",
-                                painter = painterResource(id = R.drawable.night_mode_icon)
-                            )
-                        },
-                        contentRight = {
-                            SwitchComponent(
-                                modifier = Modifier.padding(10.dp, 0.dp),
-                                checked = UiState.darkMode,
-                                onCheckedChange = {
-                                    UiState.changeDarkMode(it)
-                                }
-                            )
-                        }
-                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     ItemContainer(
                         contentLeft = {
@@ -118,7 +97,11 @@ class SettingScreen {
                         },
                         contentRight = {
                             IconButton(onClick = { showDevTools = true }) {
-                                Icon(imageVector = Icons.Rounded.Build, contentDescription = null)
+                                Icon(
+                                    imageVector = Icons.Rounded.Build,
+                                    contentDescription = null,
+                                    tint = AppColor.primary_text
+                                )
                             }
                         }
                     )
@@ -150,7 +133,7 @@ class SettingScreen {
                         onClick = { Navigate(Router.ReportScreen) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(text = "Report here")
+                        Text(text = "Report here", color = AppColor.primary_content)
                     }
                 }
             }
@@ -158,7 +141,9 @@ class SettingScreen {
         if (showDevTools)
             ModalBottomSheet(onDismissRequest = {
                 showDevTools = false
-            }, sheetState = stateDevTools) {
+            }, sheetState = stateDevTools,
+                containerColor = AppColor.background
+                ) {
                 DevTools(hideModal = {
                     showDevTools = false
                 })
@@ -180,7 +165,7 @@ class SettingScreen {
                 value = urlApi,
                 onValueChange = {
                     urlApi = it
-                }, placeholder = URL.path, label = "URL API"
+                }, placeholder = "https://example.api.com/", label = "URL API"
             )
             Spacer(modifier = Modifier.height(10.dp))
             BtnText(onClick = {
@@ -209,7 +194,8 @@ class SettingScreen {
         modifier: Modifier = Modifier.padding(10.dp, 0.dp),
         textStyle: TextStyle = TextStyle(
             fontSize = CONSTANT.UI.TEXT_SIZE.SM,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            color = AppColor.primary_text
         ),
         textModifier: Modifier = Modifier.padding(5.dp, 0.dp),
         painter: Painter,
@@ -246,7 +232,7 @@ class SettingScreen {
                 .fillMaxWidth()
                 .height(CONSTANT.UI.HEIGHT_BUTTON)
                 .background(
-                    color = if (UiState.darkMode) ColorCustom.bgContainer_dark else ColorCustom.bgContainer_light,
+                    color = AppColor.background_container,
                     shape = RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON)
                 )
                 .clip(shape = RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON)),

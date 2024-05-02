@@ -1,4 +1,4 @@
-package com.video.app.screens
+package com.video.app.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -60,11 +60,11 @@ import com.video.app.api.models.Privacy
 import com.video.app.api.models.UserModel
 import com.video.app.api.models.VIP
 import com.video.app.config.CONSTANT
-import com.video.app.screens.components.Heading
-import com.video.app.screens.layouts.MainLayout
+import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.layouts.MainLayout
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
-import com.video.app.ui.theme.ColorCustom
+import com.video.app.ui.theme.AppColor
 
 class ProfileScreen {
     private lateinit var userViewModel: UserViewModel
@@ -132,7 +132,7 @@ class ProfileScreen {
                     }
                 }
             }
-            Divider()
+            Divider(color = AppColor.background_container)
             Spacer(modifier = Modifier.height(10.dp))
             LazyColumn(modifier = Modifier.padding(10.dp, 0.dp)) {
                 item {
@@ -176,7 +176,8 @@ class ProfileScreen {
                             Text(
                                 text = "@${userCurrent?.value?.username.toString()}",
                                 style = TextStyle(
-                                    fontStyle = FontStyle.Italic
+                                    fontStyle = FontStyle.Italic,
+                                    color = AppColor.second_text
                                 )
                             )
                         }
@@ -186,11 +187,11 @@ class ProfileScreen {
                     Spacer(modifier = Modifier.height(10.dp))
                     PlaylistView()
                     Spacer(modifier = Modifier.height(10.dp))
-                    Divider()
+                    Divider(color = AppColor.background_container)
                     Spacer(modifier = Modifier.height(10.dp))
                     OptionsAccount()
                     Spacer(modifier = Modifier.height(10.dp))
-                    Divider()
+                    Divider(color = AppColor.background_container)
                 }
             }
         }
@@ -260,8 +261,10 @@ class ProfileScreen {
             }
             Column(modifier = Modifier.padding(10.dp, 5.dp)) {
                 Text(
-                    text = playlistModel?.name.toString(), style = TextStyle(
-                        fontWeight = FontWeight.SemiBold
+                    text = playlistModel?.name.toString(),
+                    style = TextStyle(
+                        fontWeight = FontWeight.SemiBold,
+                        color = AppColor.primary_text
                     ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -269,7 +272,8 @@ class ProfileScreen {
                 Text(
                     text = if (playlistModel.privacy == Privacy.PRIVATE) "Private" else "Public",
                     style = TextStyle(
-                        fontSize = 10.sp
+                        fontSize = 10.sp,
+                        color = AppColor.second_text
                     )
                 )
             }
@@ -344,17 +348,19 @@ class ProfileScreen {
                 }
             }
             Spacer(modifier = Modifier.width(10.dp))
-            Text(text = text, fontWeight = fontWeight)
+            Text(text = text, fontWeight = fontWeight, color = AppColor.primary_text)
             if (hasMore) {
                 if (isMore)
                     Icon(
                         imageVector = Icons.Rounded.KeyboardArrowDown,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = AppColor.primary_text
                     )
                 else
                     Icon(
                         imageVector = Icons.Rounded.KeyboardArrowRight,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = AppColor.primary_text
                     )
             }
         }
@@ -370,8 +376,7 @@ class ProfileScreen {
                 .clip(CircleShape)
                 .height(35.dp),
             colors = ButtonDefaults.textButtonColors(
-                containerColor = if (UiState.darkMode) ColorCustom.bgContainer_dark
-                else ColorCustom.bgContainer_light
+                containerColor = AppColor.background_container
             )
         ) {
             Box(modifier = iconModifier) {
@@ -382,7 +387,7 @@ class ProfileScreen {
                 )
             }
             Spacer(modifier = Modifier.width(1.dp))
-            Text(text = text)
+            Text(text = text, color = AppColor.primary_text)
         }
     }
 

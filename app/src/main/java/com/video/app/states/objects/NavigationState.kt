@@ -7,14 +7,12 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.video.app.screens.Router
+import androidx.compose.ui.res.painterResource
+import com.video.app.R
+import com.video.app.ui.screens.Router
 
 object NavigationState {
-    var navSelected by mutableIntStateOf(0)
-    val listItem: List<String> = listOf("Home", "Profile", "Settings")
-    val listIcon: List<ImageVector> =
-        listOf(Icons.Rounded.Home, Icons.Rounded.Person, Icons.Rounded.Settings)
-    val listRouter: List<Router> =
-        listOf(Router.HomeScreen, Router.ProfileScreen, Router.SettingScreen)
+    var navSelected by mutableIntStateOf(Router.HomeScreen.id)
 }

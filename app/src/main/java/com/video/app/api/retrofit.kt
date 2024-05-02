@@ -18,11 +18,13 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import kotlin.system.exitProcess
 
 object URL {
-    var path by mutableStateOf("https://dc54-116-98-249-2.ngrok-free.app/")
     private lateinit var sharedPreferences: SharedPreferences
     private const val ROOT_SP = "url_root";
     private const val PATH_URL_API: String = "path_url_api";
-    private const val PATH_URL_DEFAULT: String = "https://dc54-116-98-249-2.ngrok-free.app/"
+    private const val PATH_URL_DEFAULT: String =
+        "https://5f66-171-225-185-116.ngrok-free.app/"
+    var path by mutableStateOf(PATH_URL_DEFAULT)
+
     fun init(context: Context) {
         sharedPreferences = context.getSharedPreferences(ROOT_SP, Context.MODE_PRIVATE)
         path = sharedPreferences.getString(PATH_URL_API, PATH_URL_DEFAULT).toString()

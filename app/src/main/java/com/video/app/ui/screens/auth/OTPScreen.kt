@@ -1,4 +1,4 @@
-package com.video.app.screens.auth
+package com.video.app.ui.screens.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -35,9 +37,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.config.CONSTANT
-import com.video.app.screens.components.Heading
-import com.video.app.screens.layouts.AuthLayout
+import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.layouts.AuthLayout
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.ui.theme.AppColor
 
 class OTPScreen {
     @Composable
@@ -72,7 +75,7 @@ class OTPScreen {
         }
         val activeBtnHandle: () -> Unit = {
             activeBtn = true
-            activeSendAgainBtn=true
+            activeSendAgainBtn = true
         }
         AuthLayout {
             LazyColumn(modifier = Modifier.padding(10.dp, 0.dp)) {
@@ -88,7 +91,8 @@ class OTPScreen {
                     Text(
                         text = "Please verify your account with the OTP we sent to $email",
                         textAlign = TextAlign.Center,
-                        fontSize = CONSTANT.UI.TEXT_SIZE.MD
+                        fontSize = CONSTANT.UI.TEXT_SIZE.MD,
+                        color = Color.LightGray
                     )
                     Spacer(modifier = Modifier.height(50.dp))
                     Row(
@@ -152,6 +156,9 @@ class OTPScreen {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ElevatedButton(
+                            colors = ButtonDefaults.elevatedButtonColors(
+                                containerColor = AppColor.background_container
+                            ),
                             onClick = {
                                 activeBtn = false
                                 activeSendAgainBtn = false
@@ -167,7 +174,8 @@ class OTPScreen {
                                 text = "Verify", style = TextStyle(
                                     fontStyle = FontStyle.Normal,
                                     fontSize = CONSTANT.UI.TEXT_SIZE.MD,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    color = AppColor.primary_content
                                 )
                             )
                         }
@@ -180,7 +188,7 @@ class OTPScreen {
                                 activeBtnHandle
                             )
                         }, enabled = activeSendAgainBtn) {
-                            Text(text = "Send again?")
+                            Text(text = "Send again?", color = AppColor.primary_text)
                         }
                     }
                 }
@@ -215,7 +223,8 @@ class OTPScreen {
                 fontSize = CONSTANT.UI.TEXT_SIZE.MD,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Italic,
+                color = AppColor.primary_text
             )
         )
     }

@@ -3,7 +3,6 @@ package com.video.app
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
@@ -16,26 +15,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
-import com.video.app.screens.HomeScreen
-import com.video.app.screens.ProfileScreen
-import com.video.app.screens.ReportScreen
-import com.video.app.screens.Router
-import com.video.app.screens.SearchScreen
-import com.video.app.screens.SettingScreen
-import com.video.app.screens.VIPRegisterScreen
-import com.video.app.screens.auth.LoginScreen
-import com.video.app.screens.auth.OTPScreen
-import com.video.app.screens.auth.RegisterScreen
+import com.video.app.ui.screens.HomeScreen
+import com.video.app.ui.screens.ProfileScreen
+import com.video.app.ui.screens.ReportScreen
+import com.video.app.ui.screens.Router
+import com.video.app.ui.screens.SearchScreen
+import com.video.app.ui.screens.SettingScreen
+import com.video.app.ui.screens.VIPRegisterScreen
+import com.video.app.ui.screens.auth.LoginScreen
+import com.video.app.ui.screens.auth.OTPScreen
+import com.video.app.ui.screens.auth.RegisterScreen
 import com.video.app.states.objects.NavigationState
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
-import com.video.app.ui.theme.MobileTheme
 
 @SuppressLint("StaticFieldLeak")
 lateinit var navController: NavHostController
@@ -75,51 +72,50 @@ class MainActivity : ComponentActivity() {
                 navController = rememberNavController()
                 initialized.value = true
             }
-            MobileTheme(darkTheme = UiState.darkMode) {
-                NavHost(
-                    navController = navController, startDestination = Router.HomeScreen.route
+            NavHost(
+                navController = navController, startDestination = Router.HomeScreen.route
+            ) {
+                composable(route = Router.HomeScreen.route) {
+                    HomeScreen().Screen(
+                        userViewModel = userViewModel,
+                        categoryAndCountryViewModel = categoryAndCountryViewModel
+                    );
+                }
+                composable(route = Router.LoginScreen.route) {
+                    LoginScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.OTPScreen.route + "/{email}/{token}",
+                    arguments = listOf(navArgument("email") {
+                        type = NavType.StringType;
+                        nullable = false
+                    }, navArgument("token") {
+                        type = NavType.StringType;
+                        nullable = false
+                    })
                 ) {
-                    composable(route = Router.HomeScreen.route) {
-                        HomeScreen().Screen(
-                            userViewModel = userViewModel,
-                            categoryAndCountryViewModel = categoryAndCountryViewModel
-                        );
-                    }
-                    composable(route = Router.LoginScreen.route) {
-                        LoginScreen().Screen(userViewModel = userViewModel)
-                    }
-                    composable(route = Router.OTPScreen.route + "/{email}/{token}",
-                        arguments = listOf(navArgument("email") {
-                            type = NavType.StringType;
-                            nullable = false
-                        }, navArgument("token") {
-                            type = NavType.StringType;
-                            nullable = false
-                        })) {
-                        OTPScreen().Screen(
-                            userViewModel = userViewModel,
-                            email = it.arguments?.getString("email")!!,
-                            token = it.arguments?.getString("token")!!
-                        )
-                    }
-                    composable(route = Router.RegisterScreen.route) {
-                        RegisterScreen().Screen(userViewModel = userViewModel)
-                    }
-                    composable(route = Router.SettingScreen.route) {
-                        SettingScreen().Screen(userViewModel = userViewModel)
-                    }
-                    composable(route = Router.ProfileScreen.route) {
-                        ProfileScreen().Screen(userViewModel = userViewModel)
-                    }
-                    composable(route = Router.SearchScreen.route) {
-                        SearchScreen().Screen(userViewModel = userViewModel)
-                    }
-                    composable(route = Router.ReportScreen.route) {
-                        ReportScreen().Screen(userViewModel = userViewModel)
-                    }
-                    composable(route = Router.VIPRegisterScreen.route) {
-                        VIPRegisterScreen().Screen(userViewModel = userViewModel)
-                    }
+                    OTPScreen().Screen(
+                        userViewModel = userViewModel,
+                        email = it.arguments?.getString("email")!!,
+                        token = it.arguments?.getString("token")!!
+                    )
+                }
+                composable(route = Router.RegisterScreen.route) {
+                    RegisterScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.SettingScreen.route) {
+                    SettingScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.ProfileScreen.route) {
+                    ProfileScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.SearchScreen.route) {
+                    SearchScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.ReportScreen.route) {
+                    ReportScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.VIPRegisterScreen.route) {
+                    VIPRegisterScreen().Screen(userViewModel = userViewModel)
                 }
             }
         }

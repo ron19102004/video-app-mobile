@@ -1,4 +1,4 @@
-package com.video.app.screens.auth
+package com.video.app.ui.screens.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -37,11 +37,12 @@ import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.LoginRequest
 import com.video.app.config.CONSTANT
-import com.video.app.screens.Router
-import com.video.app.screens.components.BtnText
-import com.video.app.screens.components.Input
-import com.video.app.screens.layouts.AuthLayout
+import com.video.app.ui.screens.Router
+import com.video.app.ui.screens.components.BtnText
+import com.video.app.ui.screens.components.Input
+import com.video.app.ui.screens.layouts.AuthLayout
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.ui.theme.AppColor
 
 class LoginScreen {
     @Composable
@@ -110,7 +111,8 @@ class LoginScreen {
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
                             fontSize = CONSTANT.UI.TEXT_SIZE.XL,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = AppColor.primary_text
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -165,9 +167,9 @@ class LoginScreen {
                         ) {
                             Text(
                                 text = "Don't have an account? ",
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = AppColor.primary_text
                             )
-                            Text(text = "Register here", color = MaterialTheme.colorScheme.surfaceTint)
+                            Text(text = "Register here", color = AppColor.primary_content)
                         }
                     }
                 }

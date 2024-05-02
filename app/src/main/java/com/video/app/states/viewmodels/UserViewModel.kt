@@ -25,7 +25,7 @@ import com.video.app.api.models.VIP
 import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.api.repositories.ReportRepository
 import com.video.app.api.repositories.UserRepository
-import com.video.app.screens.Router
+import com.video.app.ui.screens.Router
 import com.video.app.services.NotificationService
 import kotlinx.coroutines.launch
 import retrofit2.Call

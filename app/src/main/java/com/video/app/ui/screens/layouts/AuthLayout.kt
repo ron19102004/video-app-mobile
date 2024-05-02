@@ -1,4 +1,4 @@
-package com.video.app.screens.layouts
+package com.video.app.ui.screens.layouts
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
@@ -15,10 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.video.app.navController
+import com.video.app.ui.theme.AppColor
 
 @Composable
 fun AuthLayout(content: @Composable () -> Unit) {
     Scaffold(
+        containerColor = AppColor.background,
         topBar = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -28,7 +30,11 @@ fun AuthLayout(content: @Composable () -> Unit) {
                 IconButton(onClick = {
                     navController.popBackStack()
                 }) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        tint = AppColor.primary_text
+                    )
                 }
             }
         }

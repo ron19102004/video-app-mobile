@@ -1,4 +1,4 @@
-package com.video.app.screens
+package com.video.app.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,7 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Card
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,11 +45,11 @@ import androidx.compose.ui.unit.dp
 import com.video.app.R
 import com.video.app.config.CONSTANT
 import com.video.app.navController
-import com.video.app.screens.components.BtnText
-import com.video.app.screens.components.Heading
+import com.video.app.ui.screens.components.BtnText
+import com.video.app.ui.screens.components.Heading
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
-import com.video.app.ui.theme.ColorCustom
+import com.video.app.ui.theme.AppColor
 
 class VIPRegisterScreen {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +74,7 @@ class VIPRegisterScreen {
         val activeBtnHandle: () -> Unit = {
             activeButton = true
         }
-        Scaffold(topBar = {
+        Scaffold(containerColor = AppColor.background, topBar = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start,
@@ -83,7 +83,7 @@ class VIPRegisterScreen {
                 IconButton(onClick = {
                     navController.popBackStack()
                 }) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = AppColor.primary_text)
                 }
             }
         }) {
@@ -115,9 +115,9 @@ class VIPRegisterScreen {
                                 .height(60.dp)
                                 .background(
                                     color = if (index == monthSelected) {
-                                        MaterialTheme.colorScheme.inversePrimary
+                                        AppColor.background_container
                                     } else {
-                                        if (UiState.darkMode) ColorCustom.bgContainer_dark else ColorCustom.bgContainer_light
+                                        Color.Black
                                     },
                                     shape = RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON)
                                 )
@@ -131,9 +131,11 @@ class VIPRegisterScreen {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = item, modifier = Modifier, style = TextStyle(
+                                    text = item, modifier = Modifier,
+                                    style = TextStyle(
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = CONSTANT.UI.TEXT_SIZE.MD
+                                        fontSize = CONSTANT.UI.TEXT_SIZE.MD,
+                                        color = AppColor.primary_text
                                     )
                                 )
                             }
@@ -152,16 +154,16 @@ class VIPRegisterScreen {
                             },
                             enabled = activeButton,
                             shape = CircleShape,
-                            modifier = Modifier.border(
-                                1.dp,
-                                color = if (UiState.darkMode) Color.White else Color.Black,
-                                CircleShape
+                            modifier = Modifier,
+                            colors = ButtonDefaults.elevatedButtonColors(
+                                containerColor = AppColor.background_container
                             )
                         ) {
                             Text(
                                 text = "Register".uppercase(), style = TextStyle(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = CONSTANT.UI.TEXT_SIZE.SM
+                                    fontSize = CONSTANT.UI.TEXT_SIZE.SM,
+                                    color = AppColor.primary_content
                                 )
                             )
                         }

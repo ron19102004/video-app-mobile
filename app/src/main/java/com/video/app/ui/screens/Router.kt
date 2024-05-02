@@ -1,4 +1,4 @@
-package com.video.app.screens
+package com.video.app.ui.screens
 
 var idIncrement = 0;
 fun getIdIn(): Int {
@@ -11,12 +11,12 @@ sealed class Router(val id: Int, val route: String) {
     data object LoginScreen : Router(getIdIn(), "login")
     data object RegisterScreen : Router(getIdIn(), "register")
     data object ProfileScreen : Router(getIdIn(), "profile")
-    data object SearchScreen:Router(getIdIn(),"search")
-    data object ReportScreen:Router(getIdIn(),"report")
-    data object OTPScreen:Router(getIdIn(),"otp"){
+    data object SearchScreen: Router(getIdIn(),"search")
+    data object ReportScreen: Router(getIdIn(),"report")
+    data object OTPScreen: Router(getIdIn(),"otp"){
         fun setArgs(email:String,token:String):String{
             return "${route}/${email}/${token}"
         }
     }
-    data object VIPRegisterScreen:Router(getIdIn(),"vip")
+    data object VIPRegisterScreen: Router(getIdIn(),"vip")
 }

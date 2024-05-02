@@ -1,4 +1,4 @@
-package com.video.app.screens.components
+package com.video.app.ui.screens.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.video.app.config.CONSTANT
+import com.video.app.ui.theme.AppColor
 
 @Composable
 fun BtnText(
@@ -24,7 +25,7 @@ fun BtnText(
     text: String,
     textStyle: TextStyle = TextStyle(
         fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.surfaceTint
+        color = AppColor.primary_text
     ),
     shape: RoundedCornerShape? = null,
     height: Dp? = null,
@@ -37,6 +38,9 @@ fun BtnText(
             .fillMaxWidth()
             .height(height ?: CONSTANT.UI.HEIGHT_BUTTON),
         shape = shape ?: RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON),
+        colors = ButtonDefaults.elevatedButtonColors(
+            containerColor = AppColor.background_container
+        )
     ) {
         Text(text = text, style = textStyle)
     }
