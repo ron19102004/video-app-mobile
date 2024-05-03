@@ -22,7 +22,7 @@ object URL {
     private const val ROOT_SP = "url_root";
     private const val PATH_URL_API: String = "path_url_api";
     private const val PATH_URL_DEFAULT: String =
-        "https://5f66-171-225-185-116.ngrok-free.app/"
+        "https://47c1-2402-800-629c-f701-748f-4f31-85f0-f862.ngrok-free.app/"
     var path by mutableStateOf(PATH_URL_DEFAULT)
 
     fun init(context: Context) {

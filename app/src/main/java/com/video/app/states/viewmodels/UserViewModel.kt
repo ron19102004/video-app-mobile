@@ -75,7 +75,7 @@ class UserViewModel : ViewModel() {
             .apply()
     }
 
-    private fun loadUserFormToken() {
+    fun loadUserFormToken(action: () -> Unit = {}) {
         viewModelScope.launch {
             try {
                 userRepository.info()!!
@@ -89,6 +89,7 @@ class UserViewModel : ViewModel() {
                                 userCurrent.value = res?.data?.user
                                 vip.value = res?.data?.vip
                             } else logout()
+                            action()
                         }
 
                         override fun onFailure(
@@ -98,11 +99,13 @@ class UserViewModel : ViewModel() {
                             Log.e("loadUserFormToken-error", t.message.toString())
                             Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                                 .show()
+                            action()
                         }
 
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
+                action()
             }
         }
     }
