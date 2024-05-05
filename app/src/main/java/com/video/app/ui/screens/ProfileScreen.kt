@@ -1,9 +1,12 @@
 package com.video.app.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,27 +20,36 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ExitToApp
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,6 +72,7 @@ import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import com.video.app.Navigate
 import com.video.app.R
+import com.video.app.api.models.CreatePlaylistDto
 import com.video.app.api.models.PlaylistModel
 import com.video.app.api.models.Privacy
 import com.video.app.api.models.UserModel
@@ -69,6 +82,10 @@ import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.layouts.MainLayout
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
+import com.video.app.ui.screens.components.BtnImgText
+import com.video.app.ui.screens.components.BtnText
+import com.video.app.ui.screens.components.Input
 import com.video.app.ui.screens.components.PullToRefreshLazyColumn
 import com.video.app.ui.theme.AppColor
 import kotlinx.coroutines.delay
@@ -77,19 +94,29 @@ import kotlinx.coroutines.launch
 
 class ProfileScreen {
     private lateinit var userViewModel: UserViewModel
+    private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
     private lateinit var userCurrent: State<UserModel?>;
     private lateinit var vip: State<VIP?>
+    private var openCancelVipAccount = mutableStateOf(false)
+    private var urVipAccountOpen = mutableStateOf(false)
+    private var openAddPlaylist = mutableStateOf(false)
+    private var openOptionOnLongLickPlaylist = mutableStateOf(false)
+    private var idPlaylistSelectedToDelete = mutableLongStateOf(0L);
 
     @Composable
-    fun Screen(userViewModel: UserViewModel) {
+    fun Screen(
+        userViewModel: UserViewModel,
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel
+    ) {
         this.userViewModel = userViewModel
+        this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
         userCurrent = userViewModel.userCurrent.asFlow().collectAsState(initial = null)
         vip = userViewModel.vip.asFlow().collectAsState(initial = null)
         if (userViewModel.isLoggedIn) {
-            if (userCurrent != null)
+            if (userCurrent != null) {
                 Loaded()
-            else
-                LoadError()
+                ModalBottomSheets()
+            } else LoadError()
         }
     }
 
@@ -97,6 +124,10 @@ class ProfileScreen {
     private fun Loaded() {
         var isRefreshing by remember {
             mutableStateOf(false)
+        }
+        val refresh:()->Unit={
+            userViewModel.loadUserFormToken { isRefreshing = false }
+            videoAndPlaylistViewModel.loadMyPlaylist()
         }
         MainLayout(userViewModel = userViewModel) {
             Row(
@@ -146,8 +177,7 @@ class ProfileScreen {
             }
             HorizontalDivider(color = AppColor.background_container)
             Spacer(modifier = Modifier.height(10.dp))
-            PullToRefreshLazyColumn<Any>(
-                isRefreshing = isRefreshing,
+            PullToRefreshLazyColumn<Any>(isRefreshing = isRefreshing,
                 modifier = Modifier
                     .padding(10.dp, 0.dp)
                     .fillMaxWidth(),
@@ -155,7 +185,7 @@ class ProfileScreen {
                     userViewModel.viewModelScope.launch {
                         isRefreshing = true
                         delay(1000L)
-                        userViewModel.loadUserFormToken { isRefreshing = false }
+                        refresh()
                     }
                 },
                 contentFix = {
@@ -186,8 +216,7 @@ class ProfileScreen {
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 if (userCurrent?.value?.confirmed == true) {
-                                    val confirmedIconModifier = Modifier
-                                        .size(20.dp)
+                                    val confirmedIconModifier = Modifier.size(20.dp)
                                     Box(modifier = confirmedIconModifier) {
                                         Image(
                                             painter = painterResource(id = R.drawable.confirmed),
@@ -199,8 +228,7 @@ class ProfileScreen {
                             Text(
                                 text = "@${userCurrent?.value?.username.toString()}",
                                 style = TextStyle(
-                                    fontStyle = FontStyle.Italic,
-                                    color = AppColor.second_text
+                                    fontStyle = FontStyle.Italic, color = AppColor.second_text
                                 )
                             )
                         }
@@ -208,15 +236,165 @@ class ProfileScreen {
                     Spacer(modifier = Modifier.height(10.dp))
                     TagSettingContainer()
                     Spacer(modifier = Modifier.height(10.dp))
-                    PlaylistView()
+                    PlaylistContainer()
                     Spacer(modifier = Modifier.height(10.dp))
                     HorizontalDivider(color = AppColor.background_container)
                     Spacer(modifier = Modifier.height(10.dp))
                     OptionsAccount()
                     Spacer(modifier = Modifier.height(10.dp))
                     HorizontalDivider(color = AppColor.background_container)
+                })
+        }
+
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun ModalBottomSheets() {
+        val cancelVipAccountState = rememberModalBottomSheetState()
+        val addPlaylistState = rememberModalBottomSheetState()
+        val optionOnLongClickPlaylist = rememberModalBottomSheetState()
+        if (openCancelVipAccount.value) {
+            ModalBottomSheet(
+                onDismissRequest = { openCancelVipAccount.value = false },
+                sheetState = cancelVipAccountState,
+                containerColor = AppColor.background,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Heading(text = "Are you sure for Cancel VIP?", size = CONSTANT.UI.TEXT_SIZE.LG)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        BtnText(
+                            onClick = { openCancelVipAccount.value = false },
+                            text = "Not",
+                            modifier = Modifier.width(100.dp),
+                            height = 40.dp,
+                            buttonColor = Color.Red
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        BtnText(
+                            onClick = {
+                                openCancelVipAccount.value = false
+                                userViewModel.cancelVIP()
+                                urVipAccountOpen.value = false
+                            },
+                            text = "Sure",
+                            modifier = Modifier.width(100.dp),
+                            height = 40.dp,
+                            buttonColor = Color.Blue
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
-            )
+            }
+        }
+        if (openAddPlaylist.value) {
+            var name by remember {
+                mutableStateOf("")
+            }
+            var isPublic by remember {
+                mutableStateOf(false)
+            }
+            ModalBottomSheet(
+                onDismissRequest = { openAddPlaylist.value = false },
+                sheetState = addPlaylistState,
+                containerColor = AppColor.background,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                ) {
+                    Input(
+                        value = name, onValueChange = {
+                            name = it
+                        }, label = "Playlist's name", placeholder = "Healing"
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Heading(
+                            text = "Public",
+                            size = CONSTANT.UI.TEXT_SIZE.SM,
+                            fontWeight = FontWeight.Normal
+                        )
+                        Checkbox(
+                            checked = isPublic,
+                            onCheckedChange = {
+                                isPublic = it
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = AppColor.background_container
+                            )
+                        )
+                    }
+                    BtnText(onClick = {
+                        if (name.isBlank()) {
+                            Toast.makeText(
+                                userViewModel.context,
+                                "Name must not blank",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            videoAndPlaylistViewModel.addPlaylist(
+                                CreatePlaylistDto(
+                                    name,
+                                    isPublic
+                                )
+                            ) {
+                                openAddPlaylist.value = false
+                            }
+                        }
+                    }, text = "Add")
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
+        }
+        if (openOptionOnLongLickPlaylist.value) {
+            ModalBottomSheet(
+                onDismissRequest = { openOptionOnLongLickPlaylist.value = false },
+                sheetState = optionOnLongClickPlaylist,
+                containerColor = AppColor.background
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Heading(text = "Playlist Options", size = CONSTANT.UI.TEXT_SIZE.MD)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        item {
+                            BtnImgText(
+                                onClick = {
+                                    videoAndPlaylistViewModel.deletePlaylist(
+                                        idPlaylistSelectedToDelete.value
+                                    ) {
+                                        openOptionOnLongLickPlaylist.value = false
+                                    }
+                                },
+                                text = "Delete",
+                                painter = painterResource(
+                                    id = R.drawable.add
+                                )
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
         }
     }
 
@@ -233,7 +411,8 @@ class ProfileScreen {
                             setActiveTFABtn(true)
                         }
                         userViewModel.changeTFA(!userViewModel.tfa, activeFn)
-                    }, text = "TFA ${if (userViewModel.tfa) "on" else "off"}",
+                    },
+                    text = "TFA ${if (userViewModel.tfa) "on" else "off"}",
                     painter = painterResource(id = R.drawable.security),
                     enabled = activeTFABtn
                 )
@@ -241,150 +420,11 @@ class ProfileScreen {
                 TagSetting(
                     onClick = {
 
-                    }, text = "Confirm setting",
+                    },
+                    text = "Confirm setting",
                     painter = painterResource(id = R.drawable.confirmed),
                     enabled = true
                 )
-            }
-        }
-    }
-
-    @Composable
-    private fun PlaylistView() {
-        Column {
-            Heading(text = "Playlists", size = CONSTANT.UI.TEXT_SIZE.MD)
-            Spacer(modifier = Modifier.height(5.dp))
-            LazyRow {
-                item {
-                    PlaylistCard(PlaylistModel(0, "Watch later"), onClick = {})
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun PlaylistCard(playlistModel: PlaylistModel, onClick: (Long) -> Unit) {
-        val painterImage = painterResource(id = R.drawable.video_bg)
-        Column(modifier = Modifier
-            .width(200.dp)
-            .clickable { onClick(playlistModel?.id ?: 0) }) {
-            val imgModifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .clip(RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON))
-            Box(modifier = imgModifier) {
-                AsyncImage(
-                    model = playlistModel.image,
-                    contentDescription = null,
-                    placeholder = painterImage,
-                    error = painterImage,
-                    modifier = imgModifier.fillMaxWidth(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            Column(modifier = Modifier.padding(10.dp, 5.dp)) {
-                Text(
-                    text = playlistModel?.name.toString(),
-                    style = TextStyle(
-                        fontWeight = FontWeight.SemiBold,
-                        color = AppColor.primary_text
-                    ),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = if (playlistModel.privacy == Privacy.PRIVATE) "Private" else "Public",
-                    style = TextStyle(
-                        fontSize = 10.sp,
-                        color = AppColor.second_text
-                    )
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun OptionsAccount() {
-        val (urVipAccountOpen, setUrVipAccountOpen) = remember {
-            mutableStateOf(false)
-        }
-        Column {
-            OptionAccountCard(
-                painter = painterResource(id = R.drawable.movie),
-                "Your movies",
-                onClick = {})
-            OptionAccountCard(
-                painter = painterResource(id = R.drawable.vip),
-                "Your VIP account",
-                onClick = {
-                    if (vip != null && vip.value?.active == true) {
-                        setUrVipAccountOpen(!urVipAccountOpen)
-                    } else
-                        Navigate(Router.VIPRegisterScreen)
-                },
-                hasMore = true,
-                isMore = urVipAccountOpen
-            )
-            if (urVipAccountOpen) {
-                YourVipAccountOption()
-            }
-        }
-    }
-
-    @Composable
-    private fun YourVipAccountOption() {
-        Column(modifier = Modifier.padding(30.dp, 0.dp, 0.dp, 0.dp)) {
-            OptionAccountCard(
-                text = "Cancel VIP account",
-                onClick = { /*TODO*/ },
-                fontWeight = FontWeight.Medium,
-            )
-        }
-    }
-
-    @Composable
-    private fun OptionAccountCard(
-        painter: Painter? = null,
-        text: String,
-        onClick: () -> Unit,
-        padding: Dp = 0.dp,
-        fontWeight: FontWeight = FontWeight.SemiBold,
-        hasMore: Boolean = false,
-        isMore: Boolean = false
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .padding(padding)
-                .clickable { onClick() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (painter != null) {
-                val iconModifier = Modifier.size(30.dp)
-                Box(modifier = iconModifier) {
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        modifier = iconModifier
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(text = text, fontWeight = fontWeight, color = AppColor.primary_text)
-            if (hasMore) {
-                if (isMore)
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = AppColor.primary_text
-                    )
-                else
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = AppColor.primary_text
-                    )
             }
         }
     }
@@ -404,13 +444,164 @@ class ProfileScreen {
         ) {
             Box(modifier = iconModifier) {
                 Image(
-                    painter = painter,
-                    contentDescription = null,
-                    modifier = iconModifier
+                    painter = painter, contentDescription = null, modifier = iconModifier
                 )
             }
             Spacer(modifier = Modifier.width(1.dp))
             Text(text = text, color = AppColor.primary_text)
+        }
+    }
+
+    @Composable
+    private fun PlaylistContainer() {
+        val playlists =
+            videoAndPlaylistViewModel.myPlaylist.asFlow().collectAsState(initial = emptyList())
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Heading(text = "Playlists", size = CONSTANT.UI.TEXT_SIZE.MD)
+                IconButton(onClick = { openAddPlaylist.value = true }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = null,
+                        tint = AppColor.primary_text
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(5.dp))
+            LazyRow {
+                item {
+                    PlaylistCard(PlaylistModel(0, "Watch later"), onClick = {})
+                }
+                playlists?.value?.size?.let { pls ->
+                    items(pls) { it ->
+                        val playlist = playlists?.value?.get(it)
+                        if (playlist != null) {
+                            PlaylistCard(playlist,
+                                onClick = {
+                                }, onLongClick = {
+                                    idPlaylistSelectedToDelete.value = it
+                                    openOptionOnLongLickPlaylist.value = true
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    private fun PlaylistCard(
+        playlistModel: PlaylistModel,
+        onClick: (Long) -> Unit,
+        onLongClick: (Long) -> Unit = {}
+    ) {
+        val painterImage = painterResource(id = R.drawable.video_bg)
+        Column(modifier = Modifier
+            .width(200.dp)
+            .combinedClickable(
+                onClick = { onClick(playlistModel?.id ?: 0) },
+                onLongClick = { onLongClick(playlistModel?.id ?: 0) }
+            )) {
+            val imgModifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .clip(RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON))
+            Box(modifier = imgModifier) {
+                AsyncImage(
+                    model = playlistModel.image,
+                    contentDescription = null,
+                    placeholder = painterImage,
+                    error = painterImage,
+                    modifier = imgModifier.fillMaxWidth(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Column(modifier = Modifier.padding(10.dp, 5.dp)) {
+                Text(
+                    text = playlistModel?.name.toString(), style = TextStyle(
+                        fontWeight = FontWeight.SemiBold, color = AppColor.primary_text
+                    ), maxLines = 2, overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = if (playlistModel.privacy == Privacy.PRIVATE) "Private" else "Public",
+                    style = TextStyle(
+                        fontSize = 10.sp, color = AppColor.second_text
+                    )
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun OptionsAccount() {
+        Column {
+            OptionAccountCard(painter = painterResource(id = R.drawable.movie),
+                "Your movies",
+                onClick = {})
+            OptionAccountCard(
+                painter = painterResource(id = R.drawable.vip), "Your VIP account", onClick = {
+                    if (vip != null && vip.value?.active == true) {
+                        urVipAccountOpen.value = !urVipAccountOpen.value
+                    } else Navigate(Router.VIPRegisterScreen)
+                }, hasMore = true, isMore = urVipAccountOpen.value
+            )
+            if (urVipAccountOpen.value && vip != null) {
+                Column(modifier = Modifier.padding(30.dp, 0.dp, 0.dp, 0.dp)) {
+                    OptionAccountCard(
+                        text = "Cancel VIP account",
+                        onClick = { openCancelVipAccount.value = true },
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun OptionAccountCard(
+        painter: Painter? = null,
+        text: String,
+        onClick: () -> Unit,
+        padding: Dp = 0.dp,
+        fontWeight: FontWeight = FontWeight.SemiBold,
+        hasMore: Boolean = false,
+        isMore: Boolean = false
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .padding(padding)
+                .clickable { onClick() }, verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (painter != null) {
+                val iconModifier = Modifier.size(30.dp)
+                Box(modifier = iconModifier) {
+                    Image(
+                        painter = painter, contentDescription = null, modifier = iconModifier
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(text = text, fontWeight = fontWeight, color = AppColor.primary_text)
+            if (hasMore) {
+                if (isMore) Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = AppColor.primary_text
+                )
+                else Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = AppColor.primary_text
+                )
+            }
         }
     }
 

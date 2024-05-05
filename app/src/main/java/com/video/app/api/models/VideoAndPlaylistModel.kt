@@ -11,3 +11,9 @@ data class PlaylistModel(
     var image: String? = null,
     var privacy: Privacy? = Privacy.PRIVATE
 )
+
+//dto
+data class CreatePlaylistDto(
+    var name: String,
+    var isPublic: Boolean
+)

@@ -12,3 +12,4 @@ class CountryModel(
     val name: String,
     val slug: String
 )
+

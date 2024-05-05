@@ -22,7 +22,7 @@ object URL {
     private const val ROOT_SP = "url_root";
     private const val PATH_URL_API: String = "path_url_api";
     private const val PATH_URL_DEFAULT: String =
-        "https://47c1-2402-800-629c-f701-748f-4f31-85f0-f862.ngrok-free.app/"
+        "https://6b46-2001-ee0-4b4f-db50-957d-b029-97ea-b96.ngrok-free.app/"
     var path by mutableStateOf(PATH_URL_DEFAULT)
 
     fun init(context: Context) {
@@ -68,7 +68,14 @@ object RetrofitAPI {
     private fun isTokenRequired(request: Request): Boolean {
         val path = request.url.encodedPath
         return when (path) {
-            "/users/info", "/auth/change-TFA", "/users/vip/register" -> true
+            "/users/info",
+            "/auth/change-TFA",
+            "/users/vip/register",
+            "/users/vip/cancel",
+            "/playlists/my",
+            "/playlists/new",
+            "/playlists" -> true
+
             else -> false
         }
     }

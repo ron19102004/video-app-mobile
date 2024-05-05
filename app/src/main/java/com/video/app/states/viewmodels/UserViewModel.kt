@@ -418,4 +418,36 @@ class UserViewModel : ViewModel() {
             }
         }
     }
+
+    fun cancelVIP() {
+        viewModelScope.launch {
+            try {
+                userRepository.cancelVIP()!!.enqueue(object : Callback<ResponseLayout<Any>> {
+                    override fun onResponse(
+                        call: Call<ResponseLayout<Any>>,
+                        response: Response<ResponseLayout<Any>>
+                    ) {
+                        if (response.isSuccessful) {
+                            val res: ResponseLayout<Any>? = response.body()
+                            if (res?.status == true) {
+                                vip.value = null
+                            }
+                            Toast.makeText(context, res?.message, Toast.LENGTH_LONG)
+                                .show()
+                        } else Toast.makeText(context, response.message(), Toast.LENGTH_LONG)
+                            .show()
+                    }
+
+                    override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
+                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
+            }
+        }
+    }
 }

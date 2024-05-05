@@ -33,6 +33,7 @@ import com.video.app.states.objects.NavigationState
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 
 @SuppressLint("StaticFieldLeak")
 lateinit var navController: NavHostController
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity() {
     private var initialized = mutableStateOf(false)
     private lateinit var userViewModel: UserViewModel
     private lateinit var categoryAndCountryViewModel: CategoryAndCountryViewModel
+    private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
 
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,9 +68,15 @@ class MainActivity : ComponentActivity() {
                 URL.init(this)
                 RetrofitAPI.init(this)
                 UiState.init(this)
+
                 categoryAndCountryViewModel = viewModel()
+
                 userViewModel = viewModel()
                 userViewModel.init(this);
+
+                videoAndPlaylistViewModel = viewModel()
+                videoAndPlaylistViewModel.init(this)
+
                 navController = rememberNavController()
                 initialized.value = true
             }
@@ -84,7 +92,8 @@ class MainActivity : ComponentActivity() {
                 composable(route = Router.LoginScreen.route) {
                     LoginScreen().Screen(userViewModel = userViewModel)
                 }
-                composable(route = Router.OTPScreen.route + "/{email}/{token}",
+                composable(
+                    route = Router.OTPScreen.route + "/{email}/{token}",
                     arguments = listOf(navArgument("email") {
                         type = NavType.StringType;
                         nullable = false
@@ -106,7 +115,10 @@ class MainActivity : ComponentActivity() {
                     SettingScreen().Screen(userViewModel = userViewModel)
                 }
                 composable(route = Router.ProfileScreen.route) {
-                    ProfileScreen().Screen(userViewModel = userViewModel)
+                    ProfileScreen().Screen(
+                        userViewModel = userViewModel,
+                        videoAndPlaylistViewModel = videoAndPlaylistViewModel
+                    )
                 }
                 composable(route = Router.SearchScreen.route) {
                     SearchScreen().Screen(userViewModel = userViewModel)

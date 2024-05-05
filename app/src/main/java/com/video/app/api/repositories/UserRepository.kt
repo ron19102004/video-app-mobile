@@ -11,6 +11,7 @@ import com.video.app.api.models.VIP
 import com.video.app.api.models.VerifyOTPRequest
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.GET
 import retrofit2.http.Headers
@@ -46,4 +47,8 @@ interface UserRepository {
     @Headers("Content-Type: application/json")
     @POST("users/vip/register")
     fun registerVIP(@Query("month") month: Int): Call<ResponseLayout<VIP?>>
+
+    @Headers("Content-Type: application/json")
+    @DELETE("users/vip/cancel")
+    fun cancelVIP(): Call<ResponseLayout<Any>>
 }
