@@ -52,7 +52,6 @@ import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.ui.theme.AppColor
 
 class VIPRegisterScreen {
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun Screen(userViewModel: UserViewModel) {
         var (monthSelected, setMonthSelected) = remember {

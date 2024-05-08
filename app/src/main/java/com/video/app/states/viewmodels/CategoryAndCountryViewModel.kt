@@ -21,7 +21,7 @@ class CategoryAndCountryViewModel : ViewModel() {
     var categories = MutableLiveData<List<CategoryModel>?>(emptyList())
     var countries = MutableLiveData<List<CountryModel>?>(emptyList())
 
-    init {
+    fun init() {
         fetchCategoriesAndCountries()
     }
 

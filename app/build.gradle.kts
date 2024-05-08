@@ -77,4 +77,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0")
 
     implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
+
+    implementation( "androidx.media3:media3-exoplayer:1.3.1")
+    implementation( "androidx.media3:media3-ui:1.3.1")
+    implementation ("androidx.media3:media3-common:1.3.1")
 }

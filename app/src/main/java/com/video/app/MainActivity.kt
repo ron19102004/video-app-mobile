@@ -5,8 +5,14 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -34,6 +40,7 @@ import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
+import com.video.app.ui.screens.VideoPlayerScreen
 
 @SuppressLint("StaticFieldLeak")
 lateinit var navController: NavHostController
@@ -52,7 +59,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var categoryAndCountryViewModel: CategoryAndCountryViewModel
     private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
 
-    @OptIn(ExperimentalPermissionsApi::class)
+    @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -70,12 +77,13 @@ class MainActivity : ComponentActivity() {
                 UiState.init(this)
 
                 categoryAndCountryViewModel = viewModel()
+                categoryAndCountryViewModel.init()
 
                 userViewModel = viewModel()
                 userViewModel.init(this);
 
                 videoAndPlaylistViewModel = viewModel()
-                videoAndPlaylistViewModel.init(this)
+                videoAndPlaylistViewModel.init(this, userViewModel)
 
                 navController = rememberNavController()
                 initialized.value = true
@@ -86,11 +94,35 @@ class MainActivity : ComponentActivity() {
                 composable(route = Router.HomeScreen.route) {
                     HomeScreen().Screen(
                         userViewModel = userViewModel,
-                        categoryAndCountryViewModel = categoryAndCountryViewModel
+                        categoryAndCountryViewModel = categoryAndCountryViewModel,
+                        videoAndPlaylistViewModel = videoAndPlaylistViewModel
                     );
                 }
                 composable(route = Router.LoginScreen.route) {
                     LoginScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.VideoPlayerScreen.route + "/{index}/{videoAt}",
+                    arguments = listOf(
+                        navArgument("index") {
+                            nullable = false
+                            type = NavType.IntType
+                        },
+                        navArgument("videoAt") {
+                            nullable = false
+                            type = NavType.StringType
+                        }
+                    )
+                ) {
+                    it?.arguments?.getInt("index")?.let { index ->
+                        it?.arguments?.getString("videoAt")?.let { videoAt ->
+                            VideoPlayerScreen().Screen(
+                                userViewModel = userViewModel,
+                                indexVideo = index,
+                                videoAndPlaylistViewModel = videoAndPlaylistViewModel,
+                                videoAt = videoAt
+                            )
+                        }
+                    }
                 }
                 composable(
                     route = Router.OTPScreen.route + "/{email}/{token}",

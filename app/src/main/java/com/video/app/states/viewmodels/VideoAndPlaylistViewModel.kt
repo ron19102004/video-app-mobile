@@ -3,6 +3,8 @@ package com.video.app.states.viewmodels
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +13,7 @@ import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
 import com.video.app.api.models.CreatePlaylistDto
 import com.video.app.api.models.PlaylistModel
+import com.video.app.api.models.VideoModel
 import com.video.app.api.repositories.VideoAndPlaylistRepository
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -23,9 +26,93 @@ class VideoAndPlaylistViewModel : ViewModel() {
     }
     private lateinit var context: Context
     var myPlaylist = MutableLiveData<List<PlaylistModel>?>(emptyList())
-    fun init(context: Context) {
+    var videosOnHomeScreen = MutableLiveData<List<VideoModel>?>(emptyList())
+    var videosOnVideoPlayerBackup = MutableLiveData<List<VideoModel>?>(emptyList())
+    var videosOnVideoPlayer = MutableLiveData<List<VideoModel>?>(emptyList())
+    var isErrorFetchVideoWithUploaderId = mutableStateOf(false)
+    fun init(context: Context, userViewModel: UserViewModel) {
         this.context = context
-        loadMyPlaylist()
+        if (userViewModel.isLoggedIn) {
+            loadMyPlaylist()
+        }
+        fetchVideoHome()
+    }
+
+    fun fetchVideoHome(action: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                videoAndPlaylistRepository.getAllVideo(page = 0)!!
+                    .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            response: Response<ResponseLayout<List<VideoModel>>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<List<VideoModel>>? = response.body()
+                                if (res?.status == true) {
+                                    videosOnHomeScreen.value = res?.data
+                                }
+                            }
+                            Log.e("data-videos", videosOnHomeScreen.value.toString())
+                            action()
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            t: Throwable
+                        ) {
+                            Log.e("data-videos-error", t.toString())
+                            action()
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                action()
+            }
+        }
+    }
+
+    fun fetchVideoWithUploaderId(action: () -> Unit = {}, uploaderId: Long) {
+        videosOnVideoPlayerBackup.value = videosOnVideoPlayer.value
+        videosOnVideoPlayer.value = emptyList()
+        viewModelScope.launch {
+            try {
+                videoAndPlaylistRepository.getAllVideoWithUploaderId(
+                    page = 0,
+                    uploaderId = uploaderId
+                )!!
+                    .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            response: Response<ResponseLayout<List<VideoModel>>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<List<VideoModel>>? = response.body()
+                                if (res?.status == true) {
+                                    videosOnVideoPlayer.value = res?.data
+                                }
+                            } else {
+                                isErrorFetchVideoWithUploaderId.value = true
+                            }
+                            Log.e("data-videos", videosOnVideoPlayer.value.toString())
+                            action()
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            t: Throwable
+                        ) {
+                            Log.e("data-videos-error", t.toString())
+                            action()
+                            isErrorFetchVideoWithUploaderId.value = true
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                isErrorFetchVideoWithUploaderId.value = true
+                action()
+            }
+        }
     }
 
     fun loadMyPlaylist() {
