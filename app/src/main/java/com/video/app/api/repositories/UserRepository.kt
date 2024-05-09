@@ -51,4 +51,7 @@ interface UserRepository {
     @Headers("Content-Type: application/json")
     @DELETE("users/vip/cancel")
     fun cancelVIP(): Call<ResponseLayout<Any>>
+    @Headers("Content-Type: application/json")
+    @GET("users/info-confirmed/{id}")
+    fun getInfoUserConfirmed(@Path("id") id: Long): Call<ResponseLayout<UserModel?>>
 }

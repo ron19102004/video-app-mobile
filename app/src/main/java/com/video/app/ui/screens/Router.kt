@@ -10,7 +10,13 @@ sealed class Router(val id: Int, val route: String) {
     data object SettingScreen : Router(getIdIn(), "setting")
     data object LoginScreen : Router(getIdIn(), "login")
     data object RegisterScreen : Router(getIdIn(), "register")
-    data object ProfileScreen : Router(getIdIn(), "profile")
+    data object MyProfileScreen : Router(getIdIn(), "my_profile")
+    data object YourProfileScreen : Router(getIdIn(), "ur_profile") {
+        fun setArgs(userId: Long): String {
+            return "$route/${userId}";
+        }
+    }
+
     data object SearchScreen : Router(getIdIn(), "search")
     data object ReportScreen : Router(getIdIn(), "report")
     data object OTPScreen : Router(getIdIn(), "otp") {
@@ -21,8 +27,8 @@ sealed class Router(val id: Int, val route: String) {
 
     data object VIPRegisterScreen : Router(getIdIn(), "vip")
     data object VideoPlayerScreen : Router(getIdIn(), "play") {
-        fun setArgs(index: Int,videoAt:String): String {
-            return "$route/${index}/${videoAt}"
+        fun setArgs(index: Int, videoAt: String, uploaderId: Long): String {
+            return "$route/${index}/${uploaderId}/${videoAt}"
         }
     }
 }

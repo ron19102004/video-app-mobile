@@ -55,6 +55,7 @@ class UserViewModel : ViewModel() {
     var accessToken by mutableStateOf("");
     var tfa by mutableStateOf(false);
     var vip = MutableLiveData<VIP?>(null)
+    var infoUserConfirmed = MutableLiveData<UserModel?>(null)
 
     fun init(context: Context) {
         this.context = context;
@@ -73,6 +74,38 @@ class UserViewModel : ViewModel() {
             .putBoolean(SharedPreferencesAuthKey.IS_LOGGED_IN, isLoggedIn)
             .putBoolean(SharedPreferencesAuthKey.TFA, tfa)
             .apply()
+    }
+
+    fun fetchInfoUserConfirmed(id: Long, action: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                userRepository.getInfoUserConfirmed(id)!!
+                    .enqueue(object : Callback<ResponseLayout<UserModel?>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<UserModel?>>,
+                            response: Response<ResponseLayout<UserModel?>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<UserModel?>? = response.body()
+                                infoUserConfirmed.value = res?.data
+                            }
+                            action()
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<UserModel?>>,
+                            t: Throwable
+                        ) {
+                            t.printStackTrace()
+                            action()
+                        }
+
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                action()
+            }
+        }
     }
 
     fun loadUserFormToken(action: () -> Unit = {}) {

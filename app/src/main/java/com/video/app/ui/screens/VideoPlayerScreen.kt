@@ -36,6 +36,7 @@ import androidx.compose.material.icons.twotone.KeyboardArrowUp
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -86,10 +87,12 @@ import com.video.app.ui.theme.AppColor
 class VideoPlayerScreen {
     object VideoAt {
         const val HOME_SCREEN = "home"
-        const val PLAYER_SCREEN = "player_screen"
+        const val PLAYER_SCREEN_OR_YOUR_PROFILE = "player_screen"
+        const val SEARCH_SCREEN = "search_screen"
     }
 
     private lateinit var userViewModel: UserViewModel
+    private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
     private var videoPlayer = mutableStateOf(VideoModel())
     private lateinit var player: ExoPlayer
     private lateinit var activity: Activity
@@ -102,22 +105,30 @@ class VideoPlayerScreen {
         userViewModel: UserViewModel,
         videoAndPlaylistViewModel: VideoAndPlaylistViewModel,
         indexVideo: Int,
-        videoAt: String
+        videoAt: String,
+        uploaderId: Long
     ) {
+        videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = uploaderId)
         activity = LocalContext.current as Activity
         this.userViewModel = userViewModel;
+        this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
         when (videoAt) {
             VideoAt.HOME_SCREEN -> {
                 videoPlayer.value =
                     videoAndPlaylistViewModel.videosOnHomeScreen.value?.get(indexVideo)!!
             }
 
-            VideoAt.PLAYER_SCREEN -> {
+            VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE -> {
                 videoPlayer.value =
-                    videoAndPlaylistViewModel.videosOnVideoPlayerBackup.value?.get(indexVideo)!!
+                    videoAndPlaylistViewModel.videosWithUploaderId.value?.get(indexVideo)!!
+            }
+
+            VideoAt.SEARCH_SCREEN -> {
+                videoPlayer.value =
+                    videoAndPlaylistViewModel.videosOnSearchScreen.value?.get(indexVideo)!!
             }
         }
-        val videos = videoAndPlaylistViewModel.videosOnVideoPlayer.asFlow()
+        val videos = videoAndPlaylistViewModel.videosWithUploaderId.asFlow()
             .collectAsState(initial = emptyList())
         Scaffold(
             modifier = Modifier, containerColor = AppColor.background,
@@ -185,27 +196,37 @@ class VideoPlayerScreen {
                             }
                         }
                         Spacer(modifier = Modifier.height(5.dp))
-                        if (!videoAndPlaylistViewModel.isErrorFetchVideoWithUploaderId.value) {
-                            videos.value?.forEachIndexed { index, video ->
-                                VideoCard(
-                                    index = index,
-                                    videoModel = video,
-                                    onClick = { index, video ->
-                                        video?.uploader?.id?.let {
-                                            videoAndPlaylistViewModel.fetchVideoWithUploaderId(
-                                                uploaderId = it
-                                            )
-                                        }
-                                        Navigate(
-                                            Router.VideoPlayerScreen.setArgs(
-                                                index,
-                                                VideoAt.PLAYER_SCREEN
-                                            )
-                                        )
-                                    },
-                                    onLongClick = {}
-                                )
-                                Spacer(modifier = Modifier.height(20.dp))
+                        if (!videoAndPlaylistViewModel.isLoadingVideosWithUploaderId.value) {
+                            if (!videoAndPlaylistViewModel.isErrorFetchVideoWithUploaderId.value) {
+                                videos.value?.forEachIndexed { index, video ->
+                                    VideoCard(
+                                        index = index,
+                                        videoModel = video,
+                                        onClick = { index, video ->
+                                            video?.uploader?.id?.let { uploaderId ->
+                                                Navigate(
+                                                    Router.VideoPlayerScreen.setArgs(
+                                                        index,
+                                                        VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
+                                                        uploaderId
+                                                    )
+                                                )
+                                            }
+                                        },
+                                        onLongClick = {}
+                                    )
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                }
+                            }
+                        } else {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Spacer(modifier = Modifier.height(30.dp))
+                                CircularProgressIndicator(color = AppColor.primary_text)
+                                Spacer(modifier = Modifier.height(30.dp))
                             }
                         }
                     }
@@ -318,7 +339,12 @@ class VideoPlayerScreen {
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-
+                                val uploaderId = videoPlayer?.value?.uploader?.id
+                                if (uploaderId != null) {
+                                    userViewModel.fetchInfoUserConfirmed(id = uploaderId)
+                                    videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = uploaderId)
+                                    Navigate(Router.YourProfileScreen.setArgs(uploaderId))
+                                }
                             },
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically
@@ -354,6 +380,7 @@ class VideoPlayerScreen {
         }
         player = ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(videoPlayer.value?.src ?: ""))
+//            setMediaItem(MediaItem.fromUri("https://ia801209.us.archive.org/30/items/ts-eras-tour/TS%20ERAS%20TOUR.mp4"))
             prepare()
         }
         val playerView = PlayerView(context)

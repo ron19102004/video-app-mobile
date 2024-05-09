@@ -15,6 +15,7 @@ import com.video.app.api.models.CreatePlaylistDto
 import com.video.app.api.models.PlaylistModel
 import com.video.app.api.models.VideoModel
 import com.video.app.api.repositories.VideoAndPlaylistRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -26,19 +27,77 @@ class VideoAndPlaylistViewModel : ViewModel() {
     }
     private lateinit var context: Context
     var myPlaylist = MutableLiveData<List<PlaylistModel>?>(emptyList())
+
+    //for home screen
     var videosOnHomeScreen = MutableLiveData<List<VideoModel>?>(emptyList())
-    var videosOnVideoPlayerBackup = MutableLiveData<List<VideoModel>?>(emptyList())
-    var videosOnVideoPlayer = MutableLiveData<List<VideoModel>?>(emptyList())
+
+    //for video player screen
+    var videosWithUploaderId = MutableLiveData<List<VideoModel>?>(emptyList())
     var isErrorFetchVideoWithUploaderId = mutableStateOf(false)
+    var isLoadingVideosWithUploaderId = mutableStateOf(false)
+
+    //for search screen
+    var queryOnSearchScreen = mutableStateOf("")
+    var videosOnSearchScreen = MutableLiveData<List<VideoModel>?>(emptyList())
+    var isLoadingSearchVideo = mutableStateOf(false)
+
     fun init(context: Context, userViewModel: UserViewModel) {
         this.context = context
         if (userViewModel.isLoggedIn) {
             loadMyPlaylist()
         }
-        fetchVideoHome()
+        fetchVideosHome()
     }
 
-    fun fetchVideoHome(action: () -> Unit = {}) {
+    fun searchVideosByName(name: String, action: () -> Unit = {}) {
+        isLoadingSearchVideo.value = true
+        videosOnSearchScreen.value = emptyList()
+        viewModelScope.launch {
+            try {
+                videoAndPlaylistRepository.searchByNameLike(name)!!
+                    .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            response: Response<ResponseLayout<List<VideoModel>>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<List<VideoModel>>? = response.body()
+                                if (res?.status == true) {
+                                    videosOnSearchScreen.value = res?.data
+                                }
+                            } else Toast.makeText(
+                                context,
+                                "An error has occurred!",
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                            isLoadingSearchVideo.value = false
+                            Log.e("search-data-videos", videosOnSearchScreen.value.toString())
+                            action()
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            t: Throwable
+                        ) {
+                            Log.e("search-videos-error", t.toString())
+                            isLoadingSearchVideo.value = false
+                            action()
+                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                                .show()
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                isLoadingSearchVideo.value = false
+                action()
+                Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                    .show()
+            }
+        }
+    }
+
+    fun fetchVideosHome(action: () -> Unit = {}) {
         viewModelScope.launch {
             try {
                 videoAndPlaylistRepository.getAllVideo(page = 0)!!
@@ -72,10 +131,10 @@ class VideoAndPlaylistViewModel : ViewModel() {
         }
     }
 
-    fun fetchVideoWithUploaderId(action: () -> Unit = {}, uploaderId: Long) {
-        videosOnVideoPlayerBackup.value = videosOnVideoPlayer.value
-        videosOnVideoPlayer.value = emptyList()
+    fun fetchVideosWithUploaderId(action: () -> Unit = {}, uploaderId: Long) {
+        isLoadingVideosWithUploaderId.value = true
         viewModelScope.launch {
+            delay(1000L)
             try {
                 videoAndPlaylistRepository.getAllVideoWithUploaderId(
                     page = 0,
@@ -89,13 +148,14 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             if (response.isSuccessful) {
                                 val res: ResponseLayout<List<VideoModel>>? = response.body()
                                 if (res?.status == true) {
-                                    videosOnVideoPlayer.value = res?.data
+                                    videosWithUploaderId.value = res?.data
                                 }
                             } else {
                                 isErrorFetchVideoWithUploaderId.value = true
                             }
-                            Log.e("data-videos", videosOnVideoPlayer.value.toString())
+                            Log.e("data-videos", videosWithUploaderId.value.toString())
                             action()
+                            isLoadingVideosWithUploaderId.value = false
                         }
 
                         override fun onFailure(
@@ -105,11 +165,14 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             Log.e("data-videos-error", t.toString())
                             action()
                             isErrorFetchVideoWithUploaderId.value = true
+                            isLoadingVideosWithUploaderId.value = false
+
                         }
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
                 isErrorFetchVideoWithUploaderId.value = true
+                isLoadingVideosWithUploaderId.value = false
                 action()
             }
         }

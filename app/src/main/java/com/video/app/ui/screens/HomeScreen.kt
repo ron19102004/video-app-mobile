@@ -72,6 +72,8 @@ import kotlinx.coroutines.launch
 
 class HomeScreen {
     private lateinit var categoryAndCountryViewModel: CategoryAndCountryViewModel
+    private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
+    private lateinit var userViewModel: UserViewModel
     private var btnTagSelected = mutableIntStateOf(0)
     private var openOptionVideoOnLongClick = mutableStateOf(false)
     private var videoBeOnLongClick = mutableStateOf(VideoModel());
@@ -82,7 +84,9 @@ class HomeScreen {
         categoryAndCountryViewModel: CategoryAndCountryViewModel,
         videoAndPlaylistViewModel: VideoAndPlaylistViewModel
     ) {
+        this.userViewModel = userViewModel
         this.categoryAndCountryViewModel = categoryAndCountryViewModel
+        this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
         var isRefreshingHome by remember {
             mutableStateOf(false)
         }
@@ -117,7 +121,7 @@ class HomeScreen {
                         userViewModel.viewModelScope.launch {
                             isRefreshingHome = true
                             delay(1000L)
-                            videoAndPlaylistViewModel.fetchVideoHome { isRefreshingHome = false }
+                            videoAndPlaylistViewModel.fetchVideosHome { isRefreshingHome = false }
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
@@ -133,16 +137,14 @@ class HomeScreen {
                                     videoModel = video,
                                     onClick = { index, video ->
                                         video?.uploader?.id?.let {
-                                            videoAndPlaylistViewModel.fetchVideoWithUploaderId(
-                                                uploaderId = it
+                                            Navigate(
+                                                Router.VideoPlayerScreen.setArgs(
+                                                    index,
+                                                    VideoPlayerScreen.VideoAt.HOME_SCREEN,
+                                                    it
+                                                )
                                             )
                                         }
-                                        Navigate(
-                                            Router.VideoPlayerScreen.setArgs(
-                                                index,
-                                                VideoPlayerScreen.VideoAt.HOME_SCREEN
-                                            )
-                                        )
                                     },
                                     onLongClick = {
                                         videoBeOnLongClick.value = it
@@ -169,12 +171,28 @@ class HomeScreen {
                 onDismissRequest = { openOptionVideoOnLongClick.value = false },
                 sheetState = openOptionVideoOnLongClickState, containerColor = AppColor.background
             ) {
+                val nameUploader = videoBeOnLongClick.value.uploader?.fullName?.split(" ")
                 Column(modifier = Modifier) {
+                    if (nameUploader != null) {
+                        ModalBottomSheetItem(
+                            icon = painterResource(id = R.drawable.user_icon1),
+                            text = "Go to ${nameUploader[nameUploader.size - 1]} account"
+                        ) {
+                            videoBeOnLongClick?.value?.uploader?.id?.let {
+                                userViewModel.fetchInfoUserConfirmed(id = it)
+                                Navigate(Router.YourProfileScreen.setArgs(it))
+                            }
+                        }
+                    }
                     ModalBottomSheetItem(
                         icon = painterResource(id = R.drawable.save),
                         text = "Save to playlist"
                     ) {
-
+                        if (!userViewModel.isLoggedIn) {
+                            Navigate(Router.LoginScreen)
+                        } else {
+                            //
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(30.dp))

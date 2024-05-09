@@ -26,7 +26,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
 import com.video.app.ui.screens.HomeScreen
-import com.video.app.ui.screens.ProfileScreen
+import com.video.app.ui.screens.MyProfileScreen
 import com.video.app.ui.screens.ReportScreen
 import com.video.app.ui.screens.Router
 import com.video.app.ui.screens.SearchScreen
@@ -41,6 +41,7 @@ import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.VideoPlayerScreen
+import com.video.app.ui.screens.YourProfileScreen
 
 @SuppressLint("StaticFieldLeak")
 lateinit var navController: NavHostController
@@ -101,7 +102,7 @@ class MainActivity : ComponentActivity() {
                 composable(route = Router.LoginScreen.route) {
                     LoginScreen().Screen(userViewModel = userViewModel)
                 }
-                composable(route = Router.VideoPlayerScreen.route + "/{index}/{videoAt}",
+                composable(route = Router.VideoPlayerScreen.route + "/{index}/{uploaderId}/{videoAt}",
                     arguments = listOf(
                         navArgument("index") {
                             nullable = false
@@ -110,17 +111,24 @@ class MainActivity : ComponentActivity() {
                         navArgument("videoAt") {
                             nullable = false
                             type = NavType.StringType
+                        },
+                        navArgument("uploaderId") {
+                            nullable = false
+                            type = NavType.LongType
                         }
                     )
                 ) {
                     it?.arguments?.getInt("index")?.let { index ->
                         it?.arguments?.getString("videoAt")?.let { videoAt ->
-                            VideoPlayerScreen().Screen(
-                                userViewModel = userViewModel,
-                                indexVideo = index,
-                                videoAndPlaylistViewModel = videoAndPlaylistViewModel,
-                                videoAt = videoAt
-                            )
+                            it?.arguments?.getLong("uploaderId")?.let { uploaderId ->
+                                VideoPlayerScreen().Screen(
+                                    userViewModel = userViewModel,
+                                    indexVideo = index,
+                                    videoAndPlaylistViewModel = videoAndPlaylistViewModel,
+                                    videoAt = videoAt,
+                                    uploaderId = uploaderId
+                                )
+                            }
                         }
                     }
                 }
@@ -140,20 +148,39 @@ class MainActivity : ComponentActivity() {
                         token = it.arguments?.getString("token")!!
                     )
                 }
+                composable(route = Router.YourProfileScreen.route + "/{userId}",
+                    arguments = listOf(
+                        navArgument("userId") {
+                            nullable = false;
+                            type = NavType.LongType
+                        }
+                    )
+                ) {
+                    it?.arguments?.getLong("userId")?.let { userId ->
+                        YourProfileScreen().Screen(
+                            userId = userId,
+                            videoAndPlaylistViewModel = videoAndPlaylistViewModel,
+                            userViewModel = userViewModel
+                        )
+                    }
+                }
                 composable(route = Router.RegisterScreen.route) {
                     RegisterScreen().Screen(userViewModel = userViewModel)
                 }
                 composable(route = Router.SettingScreen.route) {
                     SettingScreen().Screen(userViewModel = userViewModel)
                 }
-                composable(route = Router.ProfileScreen.route) {
-                    ProfileScreen().Screen(
+                composable(route = Router.MyProfileScreen.route) {
+                    MyProfileScreen().Screen(
                         userViewModel = userViewModel,
                         videoAndPlaylistViewModel = videoAndPlaylistViewModel
                     )
                 }
                 composable(route = Router.SearchScreen.route) {
-                    SearchScreen().Screen(userViewModel = userViewModel)
+                    SearchScreen().Screen(
+                        userViewModel = userViewModel,
+                        videoAndPlaylistViewModel = videoAndPlaylistViewModel
+                    )
                 }
                 composable(route = Router.ReportScreen.route) {
                     ReportScreen().Screen(userViewModel = userViewModel)

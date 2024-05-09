@@ -56,7 +56,7 @@ fun NavigationBarBottom(userViewModel: UserViewModel) {
         R.drawable.setting_icon
     )
     val listRouter: List<Router> =
-        listOf(Router.ProfileScreen, Router.HomeScreen, Router.SettingScreen)
+        listOf(Router.MyProfileScreen, Router.HomeScreen, Router.SettingScreen)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -78,7 +78,7 @@ fun NavigationBarBottom(userViewModel: UserViewModel) {
                         .width(60.dp)
                         .clip(RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON))
                         .clickable {
-                            if (listRouter[index].id == Router.ProfileScreen.id && !userViewModel.isLoggedIn) {
+                            if (listRouter[index].id == Router.MyProfileScreen.id && !userViewModel.isLoggedIn) {
                                 Navigate(Router.LoginScreen.route)
                             } else {
                                 NavigationState.navSelected = listRouter[index].id

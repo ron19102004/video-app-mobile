@@ -3,8 +3,6 @@ package com.video.app.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,23 +16,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ExitToApp
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -45,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -80,7 +70,6 @@ import com.video.app.api.models.VIP
 import com.video.app.config.CONSTANT
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.layouts.MainLayout
-import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.BtnImgText
@@ -92,7 +81,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-class ProfileScreen {
+class MyProfileScreen {
     private lateinit var userViewModel: UserViewModel
     private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
     private lateinit var userCurrent: State<UserModel?>;

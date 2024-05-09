@@ -5,7 +5,7 @@ import java.util.Date
 
 //DEFINE MODEL
 class UserModel(
-    var id: Long,
+    var id: Long? = null,
     var fullName: String? = null,
     var phone: String? = null,
     var email: String? = null,
