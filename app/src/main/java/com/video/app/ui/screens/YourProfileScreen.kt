@@ -1,5 +1,6 @@
 package com.video.app.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,16 +21,22 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,15 +57,30 @@ import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.components.PullToRefreshLazyColumn
 import com.video.app.ui.screens.components.VideoCard
 import com.video.app.ui.theme.AppColor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class YourProfileScreen {
     private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
+    private lateinit var userViewModel: UserViewModel
     private lateinit var infoUserConfirmed: State<UserModel?>
     private val tabTitles = listOf("Videos", "Playlists")
     private var tabSelected = mutableIntStateOf(0)
 
+    //for bottom sheet
+    private var openUnsubscribeSheet = mutableStateOf(false)
+
+    private fun init(userId: Long) {
+        if (userViewModel?.isLoggedIn == true)
+            userViewModel.fetchInfoUserConfirmedWhenLoggedIn(id = userId)
+        else userViewModel.fetchInfoUserConfirmed(id = userId)
+        videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = userId)
+    }
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun Screen(
@@ -66,37 +88,56 @@ class YourProfileScreen {
         videoAndPlaylistViewModel: VideoAndPlaylistViewModel,
         userViewModel: UserViewModel
     ) {
-        videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = userId)
+        this.userViewModel = userViewModel
         this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
+        init(userId)
         infoUserConfirmed =
             userViewModel.infoUserConfirmed.asFlow().collectAsState(initial = UserModel())
-        Scaffold(containerColor = AppColor.background,
-            topBar = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = {
-                        navController.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = null,
-                            tint = AppColor.primary_text
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Heading(
-                        text = infoUserConfirmed?.value?.fullName ?: "Unknown",
-                        size = CONSTANT.UI.TEXT_SIZE.MD,
-                        maxLines = 1
+        var enabledButtonSubscribe by remember {
+            mutableStateOf(true)
+        }
+        var isRefreshing by remember {
+            mutableStateOf(false)
+        }
+        val scope = rememberCoroutineScope()
+        //ui
+        Scaffold(containerColor = AppColor.background, topBar = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        tint = AppColor.primary_text
                     )
                 }
+                Spacer(modifier = Modifier.width(10.dp))
+                Heading(
+                    text = infoUserConfirmed?.value?.fullName ?: "Unknown",
+                    size = CONSTANT.UI.TEXT_SIZE.MD,
+                    maxLines = 1
+                )
             }
-        ) {
-            LazyColumn(modifier = Modifier.padding(10.dp, it.calculateTopPadding(), 10.dp, 0.dp)) {
-                item {
+        }) {
+            PullToRefreshLazyColumn<Any>(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp, it.calculateTopPadding(), 10.dp, 0.dp),
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    scope.launch {
+                        isRefreshing = true
+                        delay(1000L)
+                        init(userId)
+                        isRefreshing = false
+                    }
+                },
+                contentFix = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Start,
@@ -147,12 +188,26 @@ class YourProfileScreen {
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     BtnText(
-                        onClick = { /*TODO*/ },
-                        text = "Subscribe",
+                        enabled = enabledButtonSubscribe,
+                        onClick = {
+                            if (!userViewModel.isLoggedIn) {
+                                Navigate(Router.LoginScreen)
+                            } else {
+                                if (!userViewModel.isSubscribing.value) {
+                                    enabledButtonSubscribe = false
+                                    userViewModel.subscribe(userId) {
+                                        enabledButtonSubscribe = true
+                                    }
+                                } else {
+                                    openUnsubscribeSheet.value = true
+                                }
+                            }
+                        },
+                        text = if (userViewModel.isSubscribing.value) "Subscribed" else "Subscribe",
                         height = 40.dp,
                         shape = CircleShape,
-                        buttonColor = AppColor.primary_text,
-                        textColor = AppColor.background
+                        buttonColor = if (userViewModel.isSubscribing.value) AppColor.background_container else AppColor.primary_text,
+                        textColor = if (userViewModel.isSubscribing.value) AppColor.primary_text else AppColor.background
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     PrimaryTabRow(
@@ -177,6 +232,60 @@ class YourProfileScreen {
                         1 -> Playlists()
                     }
                 }
+            )
+        }
+        ModalBottomSheetContainer()
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun ModalBottomSheetContainer() {
+        val unsubscribeState = rememberModalBottomSheetState()
+        if (openUnsubscribeSheet.value) {
+            ModalBottomSheet(
+                onDismissRequest = { openUnsubscribeSheet.value = false },
+                sheetState = unsubscribeState,
+                containerColor = AppColor.background
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp, 0.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Heading(text = "Unsubscribe?", size = CONSTANT.UI.TEXT_SIZE.MD)
+
+                    Row(
+                        modifier = Modifier,
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        BtnText(
+                            onClick = { openUnsubscribeSheet.value = false },
+                            text = "No",
+                            modifier = Modifier,
+                            height = 35.dp,
+                            buttonColor = AppColor.error
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        BtnText(
+                            onClick = {
+                                infoUserConfirmed?.value?.id?.let {
+                                    userViewModel.unsubscribe(id = it) {
+                                        openUnsubscribeSheet.value = false
+                                    }
+                                }
+                            },
+                            text = "Yes",
+                            modifier = Modifier,
+                            height = 35.dp,
+                            buttonColor = AppColor.primary_content
+
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(30.dp))
             }
         }
     }
@@ -189,24 +298,18 @@ class YourProfileScreen {
             if (videos?.value?.isNullOrEmpty() == false) {
                 Column {
                     videos?.value?.forEachIndexed { index, video ->
-                        VideoCard(
-                            index = index,
-                            videoModel = video,
-                            onClick = { index, video ->
-                                video?.uploader?.id?.let {uploaderId->
-                                    Navigate(
-                                        Router.VideoPlayerScreen.setArgs(
-                                            index,
-                                            VideoPlayerScreen.VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
-                                            uploaderId
-                                        )
+                        VideoCard(index = index, videoModel = video, onClick = { index, video ->
+                            video?.uploader?.id?.let { uploaderId ->
+                                Navigate(
+                                    Router.VideoPlayerScreen.setArgs(
+                                        index,
+                                        VideoPlayerScreen.VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
+                                        uploaderId
                                     )
-                                }
-
-                            },
-                            onLongClick = {
+                                )
                             }
-                        )
+
+                        }, onLongClick = {})
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }

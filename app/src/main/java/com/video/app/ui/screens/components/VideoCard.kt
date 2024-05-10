@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,14 +39,14 @@ import com.video.app.ui.theme.AppColor
 fun VideoCard(
     index: Int,
     videoModel: VideoModel,
-    onClick: (index: Int, videoModel:VideoModel) -> Unit,
+    onClick: (index: Int, videoModel: VideoModel) -> Unit,
     onLongClick: (videoModel: VideoModel) -> Unit
 ) {
     Column(modifier = Modifier
         .fillMaxWidth()
         .combinedClickable(
             onLongClick = { onLongClick(videoModel) },
-            onClick = { onClick(index,videoModel) }
+            onClick = { onClick(index, videoModel) }
         )) {
         val painterImageVideoError = painterResource(id = R.drawable.video_bg)
         val imageVideoModifier = Modifier
@@ -109,6 +112,62 @@ fun VideoCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun VideoCardRow(
+    index: Int,
+    videoModel: VideoModel,
+    onClick: (index: Int, videoModel: VideoModel) -> Unit,
+    onLongClick: (videoModel: VideoModel) -> Unit = {}
+) {
+    val imgVideoModifier = Modifier
+        .height(100.dp)
+        .width(150.dp)
+        .clip(RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON))
+    val painterImgVideoError = painterResource(id = R.drawable.video_bg)
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = AppColor.background_container
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onLongClick = { onLongClick(videoModel) },
+                ) {
+                    onClick(index, videoModel)
+                },
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.Top
+        ) {
+            Box(modifier = imgVideoModifier) {
+                AsyncImage(
+                    model = videoModel.image, contentDescription = null,
+                    modifier = imgVideoModifier,
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterImgVideoError,
+                    error = painterImgVideoError
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Heading(
+                    text = videoModel.name ?: "Unknown",
+                    size = CONSTANT.UI.TEXT_SIZE.SM,
+                    maxLines = 3
+                )
+                Text(
+                    text = videoModel?.uploader?.fullName ?: "Unknown",
+                    style = TextStyle(
+                        color = Color.LightGray
+                    )
+                )
             }
         }
     }

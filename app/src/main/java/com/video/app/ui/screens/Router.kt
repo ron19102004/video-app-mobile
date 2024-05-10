@@ -31,4 +31,10 @@ sealed class Router(val id: Int, val route: String) {
             return "$route/${index}/${uploaderId}/${videoAt}"
         }
     }
+
+    data object PlaylistVideoScreen : Router(getIdIn(), "playlist_video") {
+        fun setArgs(playlistId: Long, playlistIndex: Int): String {
+            return "$route/${playlistId}/${playlistIndex}"
+        }
+    }
 }

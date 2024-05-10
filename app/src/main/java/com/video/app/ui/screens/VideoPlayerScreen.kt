@@ -86,9 +86,10 @@ import com.video.app.ui.theme.AppColor
 
 class VideoPlayerScreen {
     object VideoAt {
-        const val HOME_SCREEN = "home"
+        const val HOME_SCREEN = "home_screen"
         const val PLAYER_SCREEN_OR_YOUR_PROFILE = "player_screen"
         const val SEARCH_SCREEN = "search_screen"
+        const val PLAYLIST_SCREEN = "playlist_screen"
     }
 
     private lateinit var userViewModel: UserViewModel
@@ -112,22 +113,28 @@ class VideoPlayerScreen {
         activity = LocalContext.current as Activity
         this.userViewModel = userViewModel;
         this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
-        when (videoAt) {
-            VideoAt.HOME_SCREEN -> {
-                videoPlayer.value =
+        videoPlayer.value =
+            when (videoAt) {
+                VideoAt.HOME_SCREEN -> {
                     videoAndPlaylistViewModel.videosOnHomeScreen.value?.get(indexVideo)!!
-            }
+                }
 
-            VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE -> {
-                videoPlayer.value =
+                VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE -> {
                     videoAndPlaylistViewModel.videosWithUploaderId.value?.get(indexVideo)!!
-            }
+                }
 
-            VideoAt.SEARCH_SCREEN -> {
-                videoPlayer.value =
+                VideoAt.SEARCH_SCREEN -> {
                     videoAndPlaylistViewModel.videosOnSearchScreen.value?.get(indexVideo)!!
+                }
+
+                VideoAt.PLAYLIST_SCREEN -> {
+                    videoAndPlaylistViewModel.videosOfPlaylistId.value?.get(indexVideo)!!
+                }
+
+                else -> {
+                    VideoModel()
+                }
             }
-        }
         val videos = videoAndPlaylistViewModel.videosWithUploaderId.asFlow()
             .collectAsState(initial = emptyList())
         Scaffold(

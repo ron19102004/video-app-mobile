@@ -23,12 +23,38 @@ interface VideoAndPlaylistRepository {
     fun addPlaylist(@Body createPlaylistDto: CreatePlaylistDto): Call<ResponseLayout<PlaylistModel?>>
 
     @Headers("Content-Type: application/json")
+    @GET("playlists/videos")
+    fun getVideosPlaylist(
+        @Query("playlistId") playlistId: Long
+    ): Call<ResponseLayout<List<VideoModel>>>
+
+    @Headers("Content-Type: application/json")
+    @POST("playlists/add")
+    fun addVideoToPlaylist(
+        @Query("playlistId") playlistId: Long,
+        @Query("videoId") videoId: Long
+    ): Call<ResponseLayout<Any>>
+
+    @Headers("Content-Type: application/json")
+    @DELETE("playlists/video")
+    fun deleteVideoOfPlaylist(
+        @Query("videoPlaylistId") videoPlaylistId: Long
+    ): Call<ResponseLayout<Any>>
+
+    @Headers("Content-Type: application/json")
     @DELETE("playlists")
     fun deletePlaylist(@Query("id") id: Long): Call<ResponseLayout<Any>>
 
     @Headers("Content-Type: application/json")
     @GET("videos")
     fun getAllVideo(@Query("page") page: Int = 0): Call<ResponseLayout<List<VideoModel>>>
+
+    @Headers("Content-Type: application/json")
+    @GET("videos/search")
+    fun getAllVideoWithCategoryId(
+        @Query("page") page: Int = 0,
+        @Query("category_id") categoryId: Long
+    ): Call<ResponseLayout<List<VideoModel>>>
 
     @Headers("Content-Type: application/json")
     @GET("videos")
@@ -40,4 +66,5 @@ interface VideoAndPlaylistRepository {
     @Headers("Content-Type: application/json")
     @GET("videos/search")
     fun searchByNameLike(@Query("name") name: String): Call<ResponseLayout<List<VideoModel>>>
+
 }

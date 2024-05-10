@@ -55,3 +55,8 @@ data class InfoUserResponse(
     var vip: VIP? = null,
     var user: UserModel? = null
 )
+
+data class InfoConfirmedLoggedInResponse(
+    var user: UserModel? = null,
+    var isSubscribing: Boolean? = false
+)

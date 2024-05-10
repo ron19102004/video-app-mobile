@@ -51,6 +51,7 @@ import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.components.VideoCardRow
 import com.video.app.ui.theme.AppColor
 
 class SearchScreen {
@@ -121,25 +122,27 @@ class SearchScreen {
                             text = "${result?.value?.size} results",
                             size = CONSTANT.UI.TEXT_SIZE.MD
                         )
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                     result.value?.size?.let { size ->
                         items(size) {
                             result?.value?.get(it)
                                 ?.let { video ->
-                                    VideoCardOnSearch(
+                                    VideoCardRow(
                                         index = it,
-                                        videoModel = video
-                                    ) { index, video ->
-                                        video?.uploader?.id?.let { uploaderId ->
-                                            Navigate(
-                                                Router.VideoPlayerScreen.setArgs(
-                                                    index,
-                                                    VideoPlayerScreen.VideoAt.SEARCH_SCREEN,
-                                                    uploaderId
+                                        videoModel = video,
+                                        onClick = { index, video ->
+                                            video?.uploader?.id?.let { uploaderId ->
+                                                Navigate(
+                                                    Router.VideoPlayerScreen.setArgs(
+                                                        index,
+                                                        VideoPlayerScreen.VideoAt.SEARCH_SCREEN,
+                                                        uploaderId
+                                                    )
                                                 )
-                                            )
+                                            }
                                         }
-                                    }
+                                    )
                                     Spacer(modifier = Modifier.height(10.dp))
                                 }
                         }
@@ -148,51 +151,4 @@ class SearchScreen {
             }
         }
     }
-
-    @Composable
-    private fun VideoCardOnSearch(
-        index: Int,
-        videoModel: VideoModel,
-        onClick: (index: Int, video: VideoModel) -> Unit
-    ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = AppColor.background
-            ),
-            onClick = { onClick(index, videoModel) }
-        ) {
-            val imgVideoModifier = Modifier.size(60.dp)
-            val painterImgVideoError = painterResource(id = R.drawable.video_bg)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = imgVideoModifier) {
-                    AsyncImage(
-                        model = videoModel.image,
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = imgVideoModifier,
-                        placeholder = painterImgVideoError,
-                        error = painterImgVideoError
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                videoModel.name?.let {
-                    Heading(
-                        text = it,
-                        size = CONSTANT.UI.TEXT_SIZE.SM,
-                        maxLines = 2
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SearchPreview() {
-    SearchScreen().Screen(userViewModel = viewModel(), videoAndPlaylistViewModel = viewModel())
 }

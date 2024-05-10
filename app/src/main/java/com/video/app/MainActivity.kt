@@ -40,6 +40,7 @@ import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
+import com.video.app.ui.screens.PlaylistVideoScreen
 import com.video.app.ui.screens.VideoPlayerScreen
 import com.video.app.ui.screens.YourProfileScreen
 
@@ -187,6 +188,29 @@ class MainActivity : ComponentActivity() {
                 }
                 composable(route = Router.VIPRegisterScreen.route) {
                     VIPRegisterScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.PlaylistVideoScreen.route + "/{playlistId}/{playlistIndex}",
+                    arguments = listOf(
+                        navArgument("playlistId") {
+                            nullable = false
+                            type = NavType.LongType
+                        },
+                        navArgument("playlistIndex") {
+                            nullable = false
+                            type = NavType.IntType
+                        }
+                    )
+                ) {
+                    it?.arguments?.getLong("playlistId")?.let { playlistId ->
+                        it?.arguments?.getInt("playlistIndex")?.let { playlistIndex ->
+                            PlaylistVideoScreen().Screen(
+                                videoAndPlaylistViewModel = videoAndPlaylistViewModel,
+                                userViewModel = userViewModel,
+                                playlistId = playlistId,
+                                playlistIndex = playlistIndex
+                            )
+                        }
+                    }
                 }
             }
         }

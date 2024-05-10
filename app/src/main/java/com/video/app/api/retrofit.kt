@@ -74,7 +74,13 @@ object RetrofitAPI {
             "/users/vip/cancel",
             "/playlists/my",
             "/playlists/new",
-            "/playlists" -> true
+            "/playlists/videos",
+            "/playlists/add",
+            "/playlists/video",
+            "/playlists",
+            "/users/loggedIn/info-confirmed",
+            "/users/unsubscribe",
+            "/users/subscribe" -> true
 
             else -> false
         }

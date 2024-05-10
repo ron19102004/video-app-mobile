@@ -1,5 +1,6 @@
 package com.video.app.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -64,6 +67,7 @@ import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.components.ModalBottomSheetAddPlaylist
 import com.video.app.ui.screens.components.PullToRefreshLazyColumn
 import com.video.app.ui.screens.components.VideoCard
 import com.video.app.ui.theme.AppColor
@@ -74,9 +78,12 @@ class HomeScreen {
     private lateinit var categoryAndCountryViewModel: CategoryAndCountryViewModel
     private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
     private lateinit var userViewModel: UserViewModel
-    private var btnTagSelected = mutableIntStateOf(0)
-    private var openOptionVideoOnLongClick = mutableStateOf(false)
+    private var btnTagSelected = mutableIntStateOf(-1)
     private var videoBeOnLongClick = mutableStateOf(VideoModel());
+
+    //for bottom sheet
+    private var openOptionVideoOnLongClick = mutableStateOf(false)
+    private var openAddPlaylist = mutableStateOf(false)
 
     @Composable
     fun Screen(
@@ -90,6 +97,11 @@ class HomeScreen {
         var isRefreshingHome by remember {
             mutableStateOf(false)
         }
+        videoAndPlaylistViewModel.fetchVideosHome()
+        val videos =
+            videoAndPlaylistViewModel.videosOnHomeScreen.asFlow().collectAsState(
+                initial = emptyList()
+            )
         MainLayout(userViewModel = userViewModel) {
             OutlinedTextField(
                 value = "",
@@ -113,7 +125,7 @@ class HomeScreen {
                 )
             )
             Column {
-                CategoriesTagBar()
+                CategoriesTagContainer()
                 Spacer(modifier = Modifier.height(10.dp))
                 PullToRefreshLazyColumn<Any>(
                     isRefreshing = isRefreshingHome,
@@ -121,38 +133,54 @@ class HomeScreen {
                         userViewModel.viewModelScope.launch {
                             isRefreshingHome = true
                             delay(1000L)
-                            videoAndPlaylistViewModel.fetchVideosHome { isRefreshingHome = false }
+                            if (btnTagSelected.value == -1)
+                                videoAndPlaylistViewModel.fetchVideosHome {
+                                    isRefreshingHome = false
+                                }
+                            else videoAndPlaylistViewModel
+                                .fetchVideosHomeWithCategoryId(
+                                    categoryId = btnTagSelected.value.toLong(),
+                                    action = { isRefreshingHome = false })
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
                     contentFix = {
-                        val videos =
-                            videoAndPlaylistViewModel.videosOnHomeScreen.asFlow().collectAsState(
-                                initial = emptyList()
-                            )
-                        if (videos?.value?.isNullOrEmpty() == false) {
-                            videos?.value?.forEachIndexed { index, video ->
-                                VideoCard(
-                                    index = index,
-                                    videoModel = video,
-                                    onClick = { index, video ->
-                                        video?.uploader?.id?.let {
-                                            Navigate(
-                                                Router.VideoPlayerScreen.setArgs(
-                                                    index,
-                                                    VideoPlayerScreen.VideoAt.HOME_SCREEN,
-                                                    it
+                        if (videoAndPlaylistViewModel.isFetchingVideosOnHome.value) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Spacer(modifier = Modifier.height(30.dp))
+                                CircularProgressIndicator(color = AppColor.primary_text)
+                                Spacer(modifier = Modifier.height(30.dp))
+                            }
+                        } else {
+                            if (videos?.value?.isNullOrEmpty() == false) {
+                                videos?.value?.forEachIndexed { index, video ->
+                                    VideoCard(
+                                        index = index,
+                                        videoModel = video,
+                                        onClick = { index, video ->
+                                            video?.uploader?.id?.let {
+                                                Navigate(
+                                                    Router.VideoPlayerScreen.setArgs(
+                                                        index,
+                                                        VideoPlayerScreen.VideoAt.HOME_SCREEN,
+                                                        it
+                                                    )
                                                 )
-                                            )
+                                            }
+                                        },
+                                        onLongClick = {
+                                            videoBeOnLongClick.value = it
+                                            if (videoBeOnLongClick.value.id != null)
+                                                openOptionVideoOnLongClick.value = true
                                         }
-                                    },
-                                    onLongClick = {
-                                        videoBeOnLongClick.value = it
-                                        if (videoBeOnLongClick.value.id != null)
-                                            openOptionVideoOnLongClick.value = true
-                                    }
-                                )
-                                Spacer(modifier = Modifier.height(20.dp))
+                                    )
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                }
                             }
                         }
                     }
@@ -179,7 +207,6 @@ class HomeScreen {
                             text = "Go to ${nameUploader[nameUploader.size - 1]} account"
                         ) {
                             videoBeOnLongClick?.value?.uploader?.id?.let {
-                                userViewModel.fetchInfoUserConfirmed(id = it)
                                 Navigate(Router.YourProfileScreen.setArgs(it))
                             }
                         }
@@ -191,13 +218,20 @@ class HomeScreen {
                         if (!userViewModel.isLoggedIn) {
                             Navigate(Router.LoginScreen)
                         } else {
-                            //
+                            openOptionVideoOnLongClick.value = false
+                            openAddPlaylist.value = true
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(30.dp))
             }
         }
+        ModalBottomSheetAddPlaylist(
+            isOpen = openAddPlaylist.value,
+            setOpen = { openAddPlaylist.value = false },
+            videoAndPlaylistViewModel = videoAndPlaylistViewModel,
+            video = videoBeOnLongClick.value
+        )
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -231,45 +265,48 @@ class HomeScreen {
 
 
     @Composable
-    private fun CategoriesTagBar() {
+    private fun CategoriesTagContainer() {
         val categories =
             categoryAndCountryViewModel.categories.asFlow().collectAsState(initial = emptyList())
         if (categories != null) {
+            val Tag: @Composable (index: Int, text: String, onClick: () -> Unit) -> Unit =
+                { index, text, onClick ->
+                    ElevatedButton(
+                        onClick = onClick,
+                        modifier = Modifier,
+                        shape = CircleShape,
+                        colors = ButtonDefaults.elevatedButtonColors(
+                            containerColor = if (btnTagSelected.value == index) AppColor.background_container
+                            else Color.Transparent
+                        )
+                    ) {
+                        Text(
+                            text = text, style = TextStyle(
+                                color = AppColor.primary_text,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(5.dp))
+                }
             LazyRow {
+                item {
+                    Tag(-1, "All") {
+                        videoAndPlaylistViewModel
+                            .fetchVideosHome()
+                    }
+                    Spacer(modifier = Modifier.width(5.dp))
+                }
                 categories.value?.let { list ->
                     items(list.size) { it ->
-                        ElevatedButton(
-                            onClick = {
-                                btnTagSelected.value = it
-                            },
-                            modifier = Modifier,
-                            shape = CircleShape,
-                            colors = ButtonDefaults.elevatedButtonColors(
-                                containerColor = if (btnTagSelected.value == it) AppColor.background_container
-                                else Color.Transparent
-                            )
-                        ) {
-                            Text(
-                                text = "${categories.value!![it].name}", style = TextStyle(
-                                    color = AppColor.primary_text,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                            )
+                        Tag(it, categories.value!![it].name) {
+                            btnTagSelected.value = it
+                            videoAndPlaylistViewModel
+                                .fetchVideosHomeWithCategoryId(categoryId = categories.value!![it].id)
                         }
-                        Spacer(modifier = Modifier.width(5.dp))
                     }
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomePreview() {
-    HomeScreen().Screen(
-        userViewModel = viewModel(),
-        categoryAndCountryViewModel = viewModel(),
-        videoAndPlaylistViewModel = viewModel()
-    )
 }

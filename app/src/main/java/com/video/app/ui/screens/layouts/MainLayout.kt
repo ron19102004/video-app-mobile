@@ -15,11 +15,11 @@ import com.video.app.ui.theme.AppColor
 fun MainLayout(
     userViewModel: UserViewModel,
     modifier: Modifier = Modifier.padding(10.dp, 0.dp),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Scaffold(
         containerColor = AppColor.background,
-        bottomBar = { NavigationBarBottom(userViewModel) }
+        bottomBar = { NavigationBarBottom(userViewModel) },
     ) {
         Column(
             modifier = modifier

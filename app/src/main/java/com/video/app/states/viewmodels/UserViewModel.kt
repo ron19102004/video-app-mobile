@@ -15,6 +15,7 @@ import com.video.app.Navigate
 import com.video.app.api.ResponseLayout
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
+import com.video.app.api.models.InfoConfirmedLoggedInResponse
 import com.video.app.api.models.InfoUserResponse
 import com.video.app.api.models.LoginRequest
 import com.video.app.api.models.LoginResponse
@@ -27,6 +28,7 @@ import com.video.app.api.repositories.ReportRepository
 import com.video.app.api.repositories.UserRepository
 import com.video.app.ui.screens.Router
 import com.video.app.services.NotificationService
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -55,7 +57,12 @@ class UserViewModel : ViewModel() {
     var accessToken by mutableStateOf("");
     var tfa by mutableStateOf(false);
     var vip = MutableLiveData<VIP?>(null)
+
+    //for your profile screen
     var infoUserConfirmed = MutableLiveData<UserModel?>(null)
+    var isFetchingInfoUserConfirmed = mutableStateOf(false)
+    var isSubscribing = mutableStateOf(false);
+
 
     fun init(context: Context) {
         this.context = context;
@@ -76,7 +83,96 @@ class UserViewModel : ViewModel() {
             .apply()
     }
 
+    fun unsubscribe(id: Long, action: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                userRepository.unsubscribe(id)!!.enqueue(object : Callback<ResponseLayout<Any>> {
+                    override fun onResponse(
+                        call: Call<ResponseLayout<Any>>,
+                        response: Response<ResponseLayout<Any>>
+                    ) {
+                        if (response.isSuccessful) {
+                            val res: ResponseLayout<Any>? = response?.body()
+                            if (res?.status == true) {
+                                isSubscribing.value = false
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Subscribe has an error !!!",
+                                    Toast.LENGTH_LONG
+                                )
+                                    .show()
+                            }
+                        }
+                        action()
+                    }
+
+                    override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
+                        t.printStackTrace()
+                        Toast.makeText(
+                            context,
+                            "Subscribe has an error !!!",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                        action()
+                    }
+                })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
+                action()
+            }
+        }
+    }
+
+    fun subscribe(id: Long, action: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                userRepository.subscribe(id)!!.enqueue(object : Callback<ResponseLayout<Any>> {
+                    override fun onResponse(
+                        call: Call<ResponseLayout<Any>>,
+                        response: Response<ResponseLayout<Any>>
+                    ) {
+                        if (response.isSuccessful) {
+                            val res: ResponseLayout<Any>? = response?.body()
+                            if (res?.status == true) {
+                                isSubscribing.value = true
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Subscribe has an error !!!",
+                                    Toast.LENGTH_LONG
+                                )
+                                    .show()
+                            }
+                        }
+                        action()
+                    }
+
+                    override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
+                        action()
+                        t.printStackTrace()
+                        Toast.makeText(
+                            context,
+                            "Subscribe has an error !!!",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    }
+                })
+            } catch (e: Exception) {
+                action()
+                e.printStackTrace()
+                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+                    .show()
+            }
+        }
+    }
+
     fun fetchInfoUserConfirmed(id: Long, action: () -> Unit = {}) {
+        isFetchingInfoUserConfirmed.value = true
         viewModelScope.launch {
             try {
                 userRepository.getInfoUserConfirmed(id)!!
@@ -90,6 +186,7 @@ class UserViewModel : ViewModel() {
                                 infoUserConfirmed.value = res?.data
                             }
                             action()
+                            isFetchingInfoUserConfirmed.value = false
                         }
 
                         override fun onFailure(
@@ -98,12 +195,52 @@ class UserViewModel : ViewModel() {
                         ) {
                             t.printStackTrace()
                             action()
+                            isFetchingInfoUserConfirmed.value = false
                         }
 
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
                 action()
+                isFetchingInfoUserConfirmed.value = false
+            }
+        }
+    }
+
+    fun fetchInfoUserConfirmedWhenLoggedIn(id: Long, action: () -> Unit = {}) {
+        isFetchingInfoUserConfirmed.value = true
+        viewModelScope.launch {
+            try {
+                userRepository.getInfoUserConfirmedWhenLoggedIn(id)!!
+                    .enqueue(object : Callback<ResponseLayout<InfoConfirmedLoggedInResponse?>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<InfoConfirmedLoggedInResponse?>>,
+                            response: Response<ResponseLayout<InfoConfirmedLoggedInResponse?>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<InfoConfirmedLoggedInResponse?>? =
+                                    response.body()
+                                infoUserConfirmed.value = res?.data?.user
+                                isSubscribing.value = res?.data?.isSubscribing == true
+                            }
+                            action()
+                            isFetchingInfoUserConfirmed.value = false
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<InfoConfirmedLoggedInResponse?>>,
+                            t: Throwable
+                        ) {
+                            t.printStackTrace()
+                            action()
+                            isFetchingInfoUserConfirmed.value = false
+                        }
+
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                action()
+                isFetchingInfoUserConfirmed.value = false
             }
         }
     }

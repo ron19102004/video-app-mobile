@@ -114,7 +114,7 @@ class MyProfileScreen {
         var isRefreshing by remember {
             mutableStateOf(false)
         }
-        val refresh:()->Unit={
+        val refresh: () -> Unit = {
             userViewModel.loadUserFormToken { isRefreshing = false }
             videoAndPlaylistViewModel.loadMyPlaylist()
         }
@@ -462,20 +462,26 @@ class MyProfileScreen {
             }
             Spacer(modifier = Modifier.height(5.dp))
             LazyRow {
-                item {
-                    PlaylistCard(PlaylistModel(0, "Watch later"), onClick = {})
-                }
                 playlists?.value?.size?.let { pls ->
                     items(pls) { it ->
                         val playlist = playlists?.value?.get(it)
                         if (playlist != null) {
-                            PlaylistCard(playlist,
-                                onClick = {
+                            PlaylistCard(
+                                index = it,
+                                playlistModel = playlist,
+                                onClick = { playlistId, playlistIndex ->
+                                    Navigate(
+                                        Router.PlaylistVideoScreen.setArgs(
+                                            playlistId,
+                                            playlistIndex
+                                        )
+                                    )
                                 }, onLongClick = {
                                     idPlaylistSelectedToDelete.value = it
                                     openOptionOnLongLickPlaylist.value = true
                                 }
                             )
+                            Spacer(modifier = Modifier.width(10.dp))
                         }
                     }
                 }
@@ -486,15 +492,16 @@ class MyProfileScreen {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun PlaylistCard(
+        index: Int,
         playlistModel: PlaylistModel,
-        onClick: (Long) -> Unit,
-        onLongClick: (Long) -> Unit = {}
+        onClick: (playlistId: Long, playlistIndex: Int) -> Unit,
+        onLongClick: (playlistId: Long) -> Unit = {}
     ) {
         val painterImage = painterResource(id = R.drawable.video_bg)
         Column(modifier = Modifier
-            .width(200.dp)
+            .width(150.dp)
             .combinedClickable(
-                onClick = { onClick(playlistModel?.id ?: 0) },
+                onClick = { onClick(playlistModel?.id ?: 0, index) },
                 onLongClick = { onLongClick(playlistModel?.id ?: 0) }
             )) {
             val imgModifier = Modifier

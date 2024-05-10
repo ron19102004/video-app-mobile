@@ -245,9 +245,3 @@ class SettingScreen {
     }
 
 }
-
-@Preview(showBackground = true)
-@Composable
-fun SettingPreview() {
-    SettingScreen().Screen(userViewModel = viewModel())
-}

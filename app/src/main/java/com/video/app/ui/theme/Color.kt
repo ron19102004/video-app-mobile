@@ -9,5 +9,6 @@ object AppColor{
     val primary_text = Color.White
     val second_text = Color(167,167,167)
     val error = Color.Red
-
+    val background_trans = Color(0, 0, 0, 149)
+    val background_trans1 = Color(255, 255, 255, 64)
 }

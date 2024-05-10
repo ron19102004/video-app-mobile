@@ -2,6 +2,7 @@ package com.video.app.api.repositories
 
 import com.video.app.api.ApiResponse
 import com.video.app.api.ResponseLayout
+import com.video.app.api.models.InfoConfirmedLoggedInResponse
 import com.video.app.api.models.InfoUserResponse
 import com.video.app.api.models.LoginRequest
 import com.video.app.api.models.LoginResponse
@@ -51,7 +52,21 @@ interface UserRepository {
     @Headers("Content-Type: application/json")
     @DELETE("users/vip/cancel")
     fun cancelVIP(): Call<ResponseLayout<Any>>
+
     @Headers("Content-Type: application/json")
-    @GET("users/info-confirmed/{id}")
-    fun getInfoUserConfirmed(@Path("id") id: Long): Call<ResponseLayout<UserModel?>>
+    @GET("users/info-confirmed")
+    fun getInfoUserConfirmed(@Query("id") id: Long): Call<ResponseLayout<UserModel?>>
+
+    @Headers("Content-Type: application/json")
+    @GET("users/loggedIn/info-confirmed")
+    fun getInfoUserConfirmedWhenLoggedIn(@Query("id") id: Long): Call<ResponseLayout<InfoConfirmedLoggedInResponse?>>
+
+    @Headers("Content-Type: application/json")
+    @POST("users/subscribe")
+    fun subscribe(@Query("id") id: Long): Call<ResponseLayout<Any>>
+
+    @Headers("Content-Type: application/json")
+    @DELETE("users/unsubscribe")
+    fun unsubscribe(@Query("id") id: Long): Call<ResponseLayout<Any>>
+
 }
