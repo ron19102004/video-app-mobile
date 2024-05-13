@@ -37,4 +37,6 @@ sealed class Router(val id: Int, val route: String) {
             return "$route/${playlistId}/${playlistIndex}"
         }
     }
+    data object UpdateAvatarScreen:Router(getIdIn(),"update_avatar")
+    data object MyVideoScreen:Router(getIdIn(),"my_video")
 }

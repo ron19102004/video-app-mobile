@@ -66,5 +66,8 @@ interface VideoAndPlaylistRepository {
     @Headers("Content-Type: application/json")
     @GET("videos/search")
     fun searchByNameLike(@Query("name") name: String): Call<ResponseLayout<List<VideoModel>>>
+    @Headers("Content-Type: application/json")
+    @GET("videos/my-video")
+    fun getAllMyVideo(): Call<ResponseLayout<List<VideoModel>>>
 
 }

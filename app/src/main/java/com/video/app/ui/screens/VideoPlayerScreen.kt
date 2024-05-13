@@ -8,6 +8,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -80,6 +81,8 @@ import com.video.app.navController
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.Heading
+import com.video.app.ui.screens.components.ModalBottomSheetAddPlaylist
+import com.video.app.ui.screens.components.ModalBottomSheetItem
 import com.video.app.ui.screens.components.VideoCard
 import com.video.app.ui.theme.AppColor
 
@@ -90,6 +93,7 @@ class VideoPlayerScreen {
         const val PLAYER_SCREEN_OR_YOUR_PROFILE = "player_screen"
         const val SEARCH_SCREEN = "search_screen"
         const val PLAYLIST_SCREEN = "playlist_screen"
+        const val MY_VIDEO_SCREEN = "my_video_screen"
     }
 
     private lateinit var userViewModel: UserViewModel
@@ -97,7 +101,12 @@ class VideoPlayerScreen {
     private var videoPlayer = mutableStateOf(VideoModel())
     private lateinit var player: ExoPlayer
     private lateinit var activity: Activity
+    private var videoSelected = mutableStateOf(VideoModel())
+
+    //for bottom sheet
     private var openDescription = mutableStateOf(false)
+    private var openOnLongClickVideoCard = mutableStateOf(false)
+    private var openAddPlaylist = mutableStateOf(false)
 
     @kotlin.OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
@@ -129,6 +138,10 @@ class VideoPlayerScreen {
 
                 VideoAt.PLAYLIST_SCREEN -> {
                     videoAndPlaylistViewModel.videosOfPlaylistId.value?.get(indexVideo)!!
+                }
+
+                VideoAt.MY_VIDEO_SCREEN -> {
+                    videoAndPlaylistViewModel.myVideos.value?.get(indexVideo)!!
                 }
 
                 else -> {
@@ -220,7 +233,10 @@ class VideoPlayerScreen {
                                                 )
                                             }
                                         },
-                                        onLongClick = {}
+                                        onLongClick = { video ->
+                                            videoSelected.value = video
+                                            openOnLongClickVideoCard.value = true
+                                        }
                                     )
                                     Spacer(modifier = Modifier.height(20.dp))
                                 }
@@ -247,6 +263,7 @@ class VideoPlayerScreen {
     @Composable
     private fun ModalBottomSheetContainer() {
         val openDescriptionState = rememberModalBottomSheetState()
+        val openOnLongClickVideoCardState = rememberModalBottomSheetState()
         if (openDescription.value) {
             ModalBottomSheet(
                 onDismissRequest = { openDescription.value = false },
@@ -260,12 +277,28 @@ class VideoPlayerScreen {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Heading(text = "Description", size = CONSTANT.UI.TEXT_SIZE.MD)
-                        IconButton(onClick = { Navigate(Router.HomeScreen) }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Home,
-                                contentDescription = null,
-                                tint = AppColor.primary_text
-                            )
+                        Row(
+                            modifier = Modifier,
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(onClick = {
+                                videoSelected.value = videoPlayer.value
+                                openAddPlaylist.value = true
+                            }) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.save),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            IconButton(onClick = { Navigate(Router.HomeScreen) }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Home,
+                                    contentDescription = null,
+                                    tint = AppColor.primary_text
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(10.dp))
@@ -378,6 +411,34 @@ class VideoPlayerScreen {
                 Spacer(modifier = Modifier.height(30.dp))
             }
         }
+        if (openOnLongClickVideoCard.value) {
+            ModalBottomSheet(
+                onDismissRequest = { openOnLongClickVideoCard.value = false },
+                sheetState = openOnLongClickVideoCardState,
+                containerColor = AppColor.background,
+            ) {
+                Column(modifier = Modifier) {
+                    ModalBottomSheetItem(
+                        icon = painterResource(id = R.drawable.save),
+                        text = "Save to playlist"
+                    ) {
+                        if (!userViewModel.isLoggedIn) {
+                            Navigate(Router.LoginScreen)
+                        } else {
+                            openOnLongClickVideoCard.value = false
+                            openAddPlaylist.value = true
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+        }
+        ModalBottomSheetAddPlaylist(
+            isOpen = openAddPlaylist.value,
+            setOpen = { openAddPlaylist.value = false },
+            videoAndPlaylistViewModel = videoAndPlaylistViewModel,
+            video = videoSelected.value
+        )
     }
 
     @Composable
@@ -387,7 +448,6 @@ class VideoPlayerScreen {
         }
         player = ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(videoPlayer.value?.src ?: ""))
-//            setMediaItem(MediaItem.fromUri("https://ia801209.us.archive.org/30/items/ts-eras-tour/TS%20ERAS%20TOUR.mp4"))
             prepare()
         }
         val playerView = PlayerView(context)

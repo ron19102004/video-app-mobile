@@ -68,6 +68,7 @@ import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.components.ModalBottomSheetAddPlaylist
+import com.video.app.ui.screens.components.ModalBottomSheetItem
 import com.video.app.ui.screens.components.PullToRefreshLazyColumn
 import com.video.app.ui.screens.components.VideoCard
 import com.video.app.ui.theme.AppColor
@@ -232,35 +233,6 @@ class HomeScreen {
             videoAndPlaylistViewModel = videoAndPlaylistViewModel,
             video = videoBeOnLongClick.value
         )
-    }
-
-    @OptIn(ExperimentalFoundationApi::class)
-    @Composable
-    private fun ModalBottomSheetItem(icon: Painter, text: String, onClick: () -> Unit) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = {}
-                ),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val iconModifier = Modifier.size(20.dp)
-            Spacer(modifier = Modifier.width(20.dp))
-            Box(modifier = iconModifier) {
-                Image(
-                    painter = icon,
-                    contentDescription = null,
-                    modifier = iconModifier,
-                    contentScale = ContentScale.Fit
-                )
-            }
-            Spacer(modifier = Modifier.width(20.dp))
-            Heading(text = text, size = CONSTANT.UI.TEXT_SIZE.SM)
-        }
     }
 
 

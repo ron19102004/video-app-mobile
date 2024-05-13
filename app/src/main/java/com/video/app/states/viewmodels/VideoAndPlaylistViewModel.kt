@@ -46,10 +46,61 @@ class VideoAndPlaylistViewModel : ViewModel() {
     var videosOfPlaylistId = MutableLiveData<List<VideoModel>?>(emptyList())
     var isFetchingVideosPlaylist = mutableStateOf(false)
 
+    //for my video screen
+    var isFetchingMyVideo = mutableStateOf(false)
+    var myVideos = MutableLiveData<List<VideoModel>?>(emptyList())
+
+
     fun init(context: Context, userViewModel: UserViewModel) {
         this.context = context
         if (userViewModel.isLoggedIn) {
             loadMyPlaylist()
+        }
+    }
+
+    fun getMyVideos(action: () -> Unit = {}) {
+        isFetchingMyVideo.value = true
+        viewModelScope.launch {
+            delay(500L)
+            try {
+                videoAndPlaylistRepository.getAllMyVideo()!!
+                    .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            response: Response<ResponseLayout<List<VideoModel>>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<List<VideoModel>>? = response.body()
+                                if (res?.status == true) {
+                                    myVideos.value = res?.data
+                                }
+                            } else Toast.makeText(
+                                context,
+                                "An error has occurred!",
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                            isFetchingMyVideo.value = false
+                            action()
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<List<VideoModel>>>,
+                            t: Throwable
+                        ) {
+                            isFetchingMyVideo.value = false
+                            action()
+                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                                .show()
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                isFetchingMyVideo.value = false
+                action()
+                Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                    .show()
+            }
         }
     }
 
@@ -104,7 +155,7 @@ class VideoAndPlaylistViewModel : ViewModel() {
     fun fetchVideosHome(action: () -> Unit = {}) {
         isFetchingVideosOnHome.value = true
         viewModelScope.launch {
-            delay(1000L)
+            delay(500L)
             try {
                 videoAndPlaylistRepository.getAllVideo(page = 0)!!
                     .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {

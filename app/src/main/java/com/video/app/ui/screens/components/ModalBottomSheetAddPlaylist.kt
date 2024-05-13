@@ -1,10 +1,14 @@
 package com.video.app.ui.screens.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -130,5 +135,33 @@ fun ModalBottomSheetAddPlaylist(
             }
             Spacer(modifier = Modifier.height(40.dp))
         }
+    }
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ModalBottomSheetItem(icon: Painter, text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = {}
+            ),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val iconModifier = Modifier.size(20.dp)
+        Spacer(modifier = Modifier.width(20.dp))
+        Box(modifier = iconModifier) {
+            Image(
+                painter = icon,
+                contentDescription = null,
+                modifier = iconModifier,
+                contentScale = ContentScale.Fit
+            )
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+        Heading(text = text, size = CONSTANT.UI.TEXT_SIZE.SM)
     }
 }

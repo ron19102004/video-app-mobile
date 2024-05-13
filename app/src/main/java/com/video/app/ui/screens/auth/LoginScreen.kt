@@ -142,6 +142,7 @@ class LoginScreen {
                     Spacer(modifier = Modifier.height(10.dp))
 
                     BtnText(
+                        buttonColor = AppColor.primary_content,
                         enabled = enabledButton,
                         onClick = {
                             if (username.isNotBlank() && password.isNotBlank() && password.length >= 8) {

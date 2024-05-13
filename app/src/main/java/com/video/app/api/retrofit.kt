@@ -22,13 +22,13 @@ object URL {
     private const val ROOT_SP = "url_root";
     private const val PATH_URL_API: String = "path_url_api";
     private const val PATH_URL_DEFAULT: String =
-        "https://6b46-2001-ee0-4b4f-db50-957d-b029-97ea-b96.ngrok-free.app/"
+        "https://hairsalondanangtss.io.vn/"
     var path by mutableStateOf(PATH_URL_DEFAULT)
 
     fun init(context: Context) {
         sharedPreferences = context.getSharedPreferences(ROOT_SP, Context.MODE_PRIVATE)
         path = sharedPreferences.getString(PATH_URL_API, PATH_URL_DEFAULT).toString()
-        Toast.makeText(context, "Url api current: $path", Toast.LENGTH_SHORT).show()
+//        Toast.makeText(context, "Url api current: $path", Toast.LENGTH_SHORT).show()
     }
 
     fun save(pathNew: String) {
@@ -72,6 +72,7 @@ object RetrofitAPI {
             "/auth/change-TFA",
             "/users/vip/register",
             "/users/vip/cancel",
+            "/users/image",
             "/playlists/my",
             "/playlists/new",
             "/playlists/videos",
@@ -80,7 +81,8 @@ object RetrofitAPI {
             "/playlists",
             "/users/loggedIn/info-confirmed",
             "/users/unsubscribe",
-            "/users/subscribe" -> true
+            "/users/subscribe",
+            "/videos/my-video"-> true
 
             else -> false
         }

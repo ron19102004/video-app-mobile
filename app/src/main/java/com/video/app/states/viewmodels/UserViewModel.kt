@@ -3,6 +3,7 @@ package com.video.app.states.viewmodels
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.getValue
@@ -26,13 +27,18 @@ import com.video.app.api.models.VIP
 import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.api.repositories.ReportRepository
 import com.video.app.api.repositories.UserRepository
+import com.video.app.config.getFileFromUri
 import com.video.app.ui.screens.Router
 import com.video.app.services.NotificationService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
 
 object SharedPreferencesAuthKey {
     const val ROOT = "auth"
@@ -81,6 +87,48 @@ class UserViewModel : ViewModel() {
             .putBoolean(SharedPreferencesAuthKey.IS_LOGGED_IN, isLoggedIn)
             .putBoolean(SharedPreferencesAuthKey.TFA, tfa)
             .apply()
+    }
+
+    fun updateAvatar(uri: Uri, action: () -> Unit = {}) {
+        val toast: (String) -> Unit = {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
+        viewModelScope.launch {
+            try {
+                val file = getFileFromUri(context, uri)
+                val requestBody = file?.asRequestBody("multipart/form-data".toMediaTypeOrNull());
+                val imagePart =
+                    MultipartBody.Part.createFormData("file", file?.name, requestBody!!)
+                userRepository.updateAvatar(imagePart)!!
+                    .enqueue(object : Callback<ResponseLayout<Any>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<Any>>,
+                            response: Response<ResponseLayout<Any>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<Any>? = response.body()
+                                if (res?.status == true) {
+                                    Navigate(Router.MyProfileScreen)
+                                }
+                                toast(res?.message!!)
+                            } else toast(response.message())
+                            action()
+                        }
+
+                        override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
+                            t.printStackTrace()
+                            toast("Error request")
+                            action()
+                        }
+                    })
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                toast("Error")
+                Log.e("error-update-img",e.message.toString())
+                action()
+            }
+        }
     }
 
     fun unsubscribe(id: Long, action: () -> Unit = {}) {

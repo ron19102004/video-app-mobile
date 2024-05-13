@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -84,27 +85,27 @@ class SettingScreen {
                 Spacer(modifier = Modifier.width(5.dp))
                 Heading(text = "Settings", size = CONSTANT.UI.TEXT_SIZE.XL)
             }
-            Divider(color = AppColor.background_container)
+            HorizontalDivider(color = AppColor.background_container)
             LazyColumn {
                 item {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    ItemContainer(
-                        contentLeft = {
-                            TextIconImage(
-                                text = "Devtools",
-                                painter = painterResource(id = R.drawable.for_dev)
-                            )
-                        },
-                        contentRight = {
-                            IconButton(onClick = { showDevTools = true }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Build,
-                                    contentDescription = null,
-                                    tint = AppColor.primary_text
-                                )
-                            }
-                        }
-                    )
+//                    Spacer(modifier = Modifier.height(10.dp))
+//                    ItemContainer(
+//                        contentLeft = {
+//                            TextIconImage(
+//                                text = "Devtools",
+//                                painter = painterResource(id = R.drawable.for_dev)
+//                            )
+//                        },
+//                        contentRight = {
+//                            IconButton(onClick = { showDevTools = true }) {
+//                                Icon(
+//                                    imageVector = Icons.Rounded.Build,
+//                                    contentDescription = null,
+//                                    tint = AppColor.primary_text
+//                                )
+//                            }
+//                        }
+//                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     if (userViewModel.isLoggedIn) {
                         ItemContainer(
@@ -139,11 +140,12 @@ class SettingScreen {
             }
         }
         if (showDevTools)
-            ModalBottomSheet(onDismissRequest = {
-                showDevTools = false
-            }, sheetState = stateDevTools,
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showDevTools = false
+                }, sheetState = stateDevTools,
                 containerColor = AppColor.background
-                ) {
+            ) {
                 DevTools(hideModal = {
                     showDevTools = false
                 })

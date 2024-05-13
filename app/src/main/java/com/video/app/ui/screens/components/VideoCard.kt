@@ -72,7 +72,7 @@ fun VideoCard(
                 AsyncImage(
                     model = videoModel?.uploader?.imageURL, contentDescription = null,
                     modifier = imageAvatarModifier,
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     placeholder = painterAvatarError,
                     error = painterAvatarError
                 )

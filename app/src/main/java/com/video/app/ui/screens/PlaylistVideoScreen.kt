@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.twotone.Share
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -43,6 +45,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.asFlow
 import coil.compose.AsyncImage
 import com.video.app.Navigate
@@ -62,6 +65,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class PlaylistVideoScreen {
+    private var openShareDialog = mutableStateOf(false)
+    private var isPlaylistPublic = mutableStateOf(false)
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     fun Screen(
@@ -72,6 +78,7 @@ class PlaylistVideoScreen {
     ) {
         videoAndPlaylistViewModel.getVideosPlaylist(playlistId = playlistId)
         val playlist = videoAndPlaylistViewModel.myPlaylist.value?.get(playlistIndex)
+        isPlaylistPublic.value = playlist?.privacy == Privacy.PUBLIC
         val videos = videoAndPlaylistViewModel.videosOfPlaylistId.asFlow()
             .collectAsState(initial = emptyList())
         var isRefreshing by remember {
@@ -183,7 +190,7 @@ class PlaylistVideoScreen {
                                     }
                                 }
                                 IconButton(
-                                    onClick = { /*TODO*/ 0 },
+                                    onClick = { openShareDialog.value = true },
                                     colors = IconButtonDefaults.iconButtonColors(
                                         containerColor = AppColor.background_trans1
                                     )
@@ -230,6 +237,71 @@ class PlaylistVideoScreen {
                     }
                 }
             )
+            DialogContainer()
+        }
+    }
+
+    @Composable
+    fun DialogContainer() {
+        if (openShareDialog.value) {
+            var isPublic by remember {
+                mutableStateOf(isPlaylistPublic.value)
+            }
+            val PrivacyCard: @Composable (title: String, value: Boolean, changeValue: (Boolean) -> Unit) -> Unit =
+                { title, value, changeValue ->
+                    Row(
+                        modifier = Modifier,
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = value,
+                            onCheckedChange = {
+                                changeValue(it)
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = AppColor.primary_content
+                            )
+                        )
+                        Heading(text = title, size = CONSTANT.UI.TEXT_SIZE.SM)
+                    }
+                }
+            Dialog(onDismissRequest = { openShareDialog.value = false }) {
+                Column(
+                    modifier = Modifier
+                        .width(300.dp)
+                        .background(
+                            color = AppColor.background,
+                            shape = RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON)
+                        )
+                ) {
+                    Heading(
+                        text = "PRIVACY",
+                        size = CONSTANT.UI.TEXT_SIZE.MD,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    )
+                    HorizontalDivider()
+                    PrivacyCard("Public", isPublic) {
+                        isPublic = it
+                    }
+                    PrivacyCard("Private", !isPublic) {
+                        isPublic = !it
+                    }
+                    BtnText(
+                        enabled = isPublic != isPlaylistPublic.value,
+                        onClick = { /*TODO*/ },
+                        text = "Change",
+                        buttonColor = AppColor.primary_content,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp, 0.dp),
+                        height = 40.dp
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
         }
     }
 }

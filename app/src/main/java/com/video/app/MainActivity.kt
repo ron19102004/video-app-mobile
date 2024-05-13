@@ -40,7 +40,9 @@ import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
+import com.video.app.ui.screens.MyVideoScreen
 import com.video.app.ui.screens.PlaylistVideoScreen
+import com.video.app.ui.screens.UpdateAvatarScreen
 import com.video.app.ui.screens.VideoPlayerScreen
 import com.video.app.ui.screens.YourProfileScreen
 
@@ -211,6 +213,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+                }
+                composable(route = Router.UpdateAvatarScreen.route) {
+                    UpdateAvatarScreen().Screen(userViewModel = userViewModel)
+                }
+                composable(route = Router.MyVideoScreen.route) {
+                    MyVideoScreen().Screen(
+                        videoAndPlaylistViewModel = videoAndPlaylistViewModel,
+                        userViewModel = userViewModel
+                    )
                 }
             }
         }

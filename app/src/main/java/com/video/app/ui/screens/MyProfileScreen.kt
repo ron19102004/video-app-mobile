@@ -182,7 +182,7 @@ class MyProfileScreen {
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val painterImage = painterResource(id = R.drawable.user_icon)
+                        val painterImage = painterResource(id = R.drawable.account_icon)
                         val imgModifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
@@ -324,7 +324,7 @@ class MyProfileScreen {
                                 isPublic = it
                             },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = AppColor.background_container
+                                checkedColor = AppColor.primary_content
                             )
                         )
                     }
@@ -412,6 +412,15 @@ class MyProfileScreen {
                     },
                     text = "Confirm setting",
                     painter = painterResource(id = R.drawable.confirmed),
+                    enabled = true
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                TagSetting(
+                    onClick = {
+                        Navigate(Router.UpdateAvatarScreen)
+                    },
+                    text = "Change avatar",
+                    painter = painterResource(id = R.drawable.user_icon1),
                     enabled = true
                 )
             }
@@ -539,7 +548,7 @@ class MyProfileScreen {
         Column {
             OptionAccountCard(painter = painterResource(id = R.drawable.movie),
                 "Your movies",
-                onClick = {})
+                onClick = { Navigate(Router.MyVideoScreen) })
             OptionAccountCard(
                 painter = painterResource(id = R.drawable.vip), "Your VIP account", onClick = {
                     if (vip != null && vip.value?.active == true) {
