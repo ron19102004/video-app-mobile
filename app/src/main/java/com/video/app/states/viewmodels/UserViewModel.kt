@@ -12,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.video.app.Navigate
 import com.video.app.api.ResponseLayout
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
@@ -28,8 +27,9 @@ import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.api.repositories.ReportRepository
 import com.video.app.api.repositories.UserRepository
 import com.video.app.config.getFileFromUri
-import com.video.app.ui.screens.Router
 import com.video.app.services.NotificationService
+import com.video.app.ui.screens.Navigate
+import com.video.app.ui.screens.Router
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -344,12 +344,10 @@ class UserViewModel : ViewModel() {
                                     val token: String = res?.data?.token.toString();
                                     tfa = res?.data?.tfa == true
                                     if (tfa) {
-                                        Navigate(
-                                            Router.OTPScreen.setArgs(
-                                                user?.username.toString(),
-                                                token
-                                            )
-                                        )
+                                        Navigate(Router.OTPScreen(
+                                            user?.username.toString(),
+                                            token
+                                        ))
                                     } else {
                                         userCurrent.value = user
                                         vip.value = res?.data?.vip

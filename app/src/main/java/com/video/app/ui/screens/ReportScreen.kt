@@ -35,12 +35,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.ReportModel
 import com.video.app.config.CONSTANT
 import com.video.app.config.ValidRegex
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.components.Input
@@ -50,7 +49,7 @@ import com.video.app.ui.theme.AppColor
 class ReportScreen {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
-    fun Screen(userViewModel: UserViewModel) {
+    fun Screen(userViewModel: UserViewModel= AppInitializerState.userViewModel) {
         var email by remember {
             mutableStateOf("")
         }
@@ -84,7 +83,7 @@ class ReportScreen {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = {
-                        navController.popBackStack()
+                        AppInitializerState.navController.popBackStack()
                     }) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = AppColor.primary_text)
                     }

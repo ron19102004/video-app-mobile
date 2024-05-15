@@ -33,20 +33,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.LoginRequest
 import com.video.app.config.CONSTANT
-import com.video.app.ui.screens.Router
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Input
 import com.video.app.ui.screens.layouts.AuthLayout
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.ui.screens.Navigate
+import com.video.app.ui.screens.Router
 import com.video.app.ui.theme.AppColor
 
 class LoginScreen {
     @Composable
-    fun Screen(userViewModel: UserViewModel) {
+    fun Screen(userViewModel: UserViewModel = AppInitializerState.userViewModel) {
         var username by remember {
             mutableStateOf("")
         }

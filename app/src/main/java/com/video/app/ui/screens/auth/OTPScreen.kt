@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.config.CONSTANT
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.layouts.AuthLayout
 import com.video.app.states.viewmodels.UserViewModel
@@ -44,7 +45,7 @@ import com.video.app.ui.theme.AppColor
 
 class OTPScreen {
     @Composable
-    fun Screen(userViewModel: UserViewModel, email: String, token: String) {
+    fun Screen(userViewModel: UserViewModel = AppInitializerState.userViewModel, email: String, token: String) {
         var text1 by remember { mutableStateOf("") }
         var text2 by remember { mutableStateOf("") }
         var text3 by remember { mutableStateOf("") }

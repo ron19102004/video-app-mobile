@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -25,7 +24,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -40,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -48,11 +45,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asFlow
 import coil.compose.AsyncImage
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.UserModel
 import com.video.app.config.CONSTANT
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.BtnText
@@ -63,7 +59,7 @@ import com.video.app.ui.theme.AppColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class YourProfileScreen {
+class UserProfileScreen {
     private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
     private lateinit var userViewModel: UserViewModel
     private lateinit var infoUserConfirmed: State<UserModel?>
@@ -85,8 +81,8 @@ class YourProfileScreen {
     @Composable
     fun Screen(
         userId: Long,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel,
-        userViewModel: UserViewModel
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel= AppInitializerState.videoAndPlaylistViewModel,
+        userViewModel: UserViewModel=AppInitializerState.userViewModel
     ) {
         this.userViewModel = userViewModel
         this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
@@ -108,7 +104,7 @@ class YourProfileScreen {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {
-                    navController.popBackStack()
+                    AppInitializerState.navController.popBackStack()
                 }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -300,13 +296,11 @@ class YourProfileScreen {
                     videos?.value?.forEachIndexed { index, video ->
                         VideoCard(index = index, videoModel = video, onClick = { index, video ->
                             video?.uploader?.id?.let { uploaderId ->
-                                Navigate(
-                                    Router.VideoPlayerScreen.setArgs(
-                                        index,
-                                        VideoPlayerScreen.VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
-                                        uploaderId
-                                    )
-                                )
+                                Navigate(Router.VideoPlayerScreen(
+                                    index,
+                                    VideoPlayerScreen.VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
+                                    uploaderId
+                                ))
                             }
 
                         }, onLongClick = {})

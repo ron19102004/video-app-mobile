@@ -73,11 +73,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.VideoModel
 import com.video.app.config.CONSTANT
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.Heading
@@ -112,8 +111,8 @@ class VideoPlayerScreen {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
     @Composable
     fun Screen(
-        userViewModel: UserViewModel,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel,
+        userViewModel: UserViewModel= AppInitializerState.userViewModel,
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel=AppInitializerState.videoAndPlaylistViewModel,
         indexVideo: Int,
         videoAt: String,
         uploaderId: Long
@@ -224,13 +223,11 @@ class VideoPlayerScreen {
                                         videoModel = video,
                                         onClick = { index, video ->
                                             video?.uploader?.id?.let { uploaderId ->
-                                                Navigate(
-                                                    Router.VideoPlayerScreen.setArgs(
-                                                        index,
-                                                        VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
-                                                        uploaderId
-                                                    )
-                                                )
+                                                Navigate(Router.VideoPlayerScreen(
+                                                    index,
+                                                    VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
+                                                    uploaderId
+                                                ))
                                             }
                                         },
                                         onLongClick = { video ->
@@ -383,7 +380,9 @@ class VideoPlayerScreen {
                                 if (uploaderId != null) {
                                     userViewModel.fetchInfoUserConfirmed(id = uploaderId)
                                     videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = uploaderId)
-                                    Navigate(Router.YourProfileScreen.setArgs(uploaderId))
+                                    Navigate(Router.UserProfileScreen(
+                                        userId = uploaderId
+                                    ))
                                 }
                             },
                         horizontalArrangement = Arrangement.Start,

@@ -20,15 +20,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.HomeScreen
 import com.video.app.ui.screens.MyProfileScreen
 import com.video.app.ui.screens.ReportScreen
-import com.video.app.ui.screens.Router
 import com.video.app.ui.screens.SearchScreen
 import com.video.app.ui.screens.SettingScreen
 import com.video.app.ui.screens.VIPRegisterScreen
@@ -42,28 +43,14 @@ import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.MyVideoScreen
 import com.video.app.ui.screens.PlaylistVideoScreen
+import com.video.app.ui.screens.Router
 import com.video.app.ui.screens.UpdateAvatarScreen
 import com.video.app.ui.screens.VideoPlayerScreen
-import com.video.app.ui.screens.YourProfileScreen
-
-@SuppressLint("StaticFieldLeak")
-lateinit var navController: NavHostController
-fun Navigate(router: Router) {
-    navController.navigate(route = router.route)
-    NavigationState.navSelected = router.id
-}
-
-fun Navigate(route: String) {
-    navController.navigate(route = route)
-}
+import com.video.app.ui.screens.UserProfileScreen
 
 class MainActivity : ComponentActivity() {
     private var initialized = mutableStateOf(false)
-    private lateinit var userViewModel: UserViewModel
-    private lateinit var categoryAndCountryViewModel: CategoryAndCountryViewModel
-    private lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
-
-    @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -76,151 +63,70 @@ class MainActivity : ComponentActivity() {
                 }
             }
             if (!initialized.value) {
-                URL.init(this)
-                RetrofitAPI.init(this)
-                UiState.init(this)
-
-                categoryAndCountryViewModel = viewModel()
-                categoryAndCountryViewModel.init()
-
-                userViewModel = viewModel()
-                userViewModel.init(this);
-
-                videoAndPlaylistViewModel = viewModel()
-                videoAndPlaylistViewModel.init(this, userViewModel)
-
-                navController = rememberNavController()
+                AppInitializerState.init(this)
                 initialized.value = true
             }
             NavHost(
-                navController = navController, startDestination = Router.HomeScreen.route
+                navController = AppInitializerState.navController, startDestination = Router.HomeScreen
             ) {
-                composable(route = Router.HomeScreen.route) {
-                    HomeScreen().Screen(
-                        userViewModel = userViewModel,
-                        categoryAndCountryViewModel = categoryAndCountryViewModel,
-                        videoAndPlaylistViewModel = videoAndPlaylistViewModel
-                    );
+                composable<Router.HomeScreen> {
+                    HomeScreen().Screen();
                 }
-                composable(route = Router.LoginScreen.route) {
-                    LoginScreen().Screen(userViewModel = userViewModel)
+                composable<Router.LoginScreen> {
+                    LoginScreen().Screen()
                 }
-                composable(route = Router.VideoPlayerScreen.route + "/{index}/{uploaderId}/{videoAt}",
-                    arguments = listOf(
-                        navArgument("index") {
-                            nullable = false
-                            type = NavType.IntType
-                        },
-                        navArgument("videoAt") {
-                            nullable = false
-                            type = NavType.StringType
-                        },
-                        navArgument("uploaderId") {
-                            nullable = false
-                            type = NavType.LongType
-                        }
-                    )
-                ) {
-                    it?.arguments?.getInt("index")?.let { index ->
-                        it?.arguments?.getString("videoAt")?.let { videoAt ->
-                            it?.arguments?.getLong("uploaderId")?.let { uploaderId ->
-                                VideoPlayerScreen().Screen(
-                                    userViewModel = userViewModel,
-                                    indexVideo = index,
-                                    videoAndPlaylistViewModel = videoAndPlaylistViewModel,
-                                    videoAt = videoAt,
-                                    uploaderId = uploaderId
-                                )
-                            }
-                        }
-                    }
+
+                composable<Router.UpdateAvatarScreen> {
+                    UpdateAvatarScreen().Screen()
                 }
-                composable(
-                    route = Router.OTPScreen.route + "/{email}/{token}",
-                    arguments = listOf(navArgument("email") {
-                        type = NavType.StringType;
-                        nullable = false
-                    }, navArgument("token") {
-                        type = NavType.StringType;
-                        nullable = false
-                    })
-                ) {
-                    OTPScreen().Screen(
-                        userViewModel = userViewModel,
-                        email = it.arguments?.getString("email")!!,
-                        token = it.arguments?.getString("token")!!
-                    )
+                composable<Router.MyVideoScreen> {
+                    MyVideoScreen().Screen()
                 }
-                composable(route = Router.YourProfileScreen.route + "/{userId}",
-                    arguments = listOf(
-                        navArgument("userId") {
-                            nullable = false;
-                            type = NavType.LongType
-                        }
-                    )
-                ) {
-                    it?.arguments?.getLong("userId")?.let { userId ->
-                        YourProfileScreen().Screen(
-                            userId = userId,
-                            videoAndPlaylistViewModel = videoAndPlaylistViewModel,
-                            userViewModel = userViewModel
-                        )
-                    }
+                composable<Router.RegisterScreen> {
+                    RegisterScreen().Screen()
                 }
-                composable(route = Router.RegisterScreen.route) {
-                    RegisterScreen().Screen(userViewModel = userViewModel)
+                composable<Router.SettingScreen> {
+                    SettingScreen().Screen()
                 }
-                composable(route = Router.SettingScreen.route) {
-                    SettingScreen().Screen(userViewModel = userViewModel)
+                composable<Router.MyProfileScreen> {
+                    MyProfileScreen().Screen( )
                 }
-                composable(route = Router.MyProfileScreen.route) {
-                    MyProfileScreen().Screen(
-                        userViewModel = userViewModel,
-                        videoAndPlaylistViewModel = videoAndPlaylistViewModel
-                    )
-                }
-                composable(route = Router.SearchScreen.route) {
+                composable<Router.SearchScreen> {
                     SearchScreen().Screen(
-                        userViewModel = userViewModel,
-                        videoAndPlaylistViewModel = videoAndPlaylistViewModel
                     )
                 }
-                composable(route = Router.ReportScreen.route) {
-                    ReportScreen().Screen(userViewModel = userViewModel)
+                composable<Router.ReportScreen> {
+                    ReportScreen().Screen()
                 }
-                composable(route = Router.VIPRegisterScreen.route) {
-                    VIPRegisterScreen().Screen(userViewModel = userViewModel)
+                composable<Router.VIPRegisterScreen> {
+                    VIPRegisterScreen().Screen()
                 }
-                composable(route = Router.PlaylistVideoScreen.route + "/{playlistId}/{playlistIndex}",
-                    arguments = listOf(
-                        navArgument("playlistId") {
-                            nullable = false
-                            type = NavType.LongType
-                        },
-                        navArgument("playlistIndex") {
-                            nullable = false
-                            type = NavType.IntType
-                        }
+                composable<Router.PlaylistVideoScreen> {
+                    val args = it.toRoute<Router.PlaylistVideoScreen>()
+                    PlaylistVideoScreen().Screen(
+                        playlistId = args.playlistId,
+                        playlistIndex = args.playlistIndex
                     )
-                ) {
-                    it?.arguments?.getLong("playlistId")?.let { playlistId ->
-                        it?.arguments?.getInt("playlistIndex")?.let { playlistIndex ->
-                            PlaylistVideoScreen().Screen(
-                                videoAndPlaylistViewModel = videoAndPlaylistViewModel,
-                                userViewModel = userViewModel,
-                                playlistId = playlistId,
-                                playlistIndex = playlistIndex
-                            )
-                        }
-                    }
                 }
-                composable(route = Router.UpdateAvatarScreen.route) {
-                    UpdateAvatarScreen().Screen(userViewModel = userViewModel)
+                composable<Router.OTPScreen> {
+                    val args = it.toRoute<Router.OTPScreen>()
+                    OTPScreen().Screen(
+                        email = args.email,
+                        token = args.token
+                    )
                 }
-                composable(route = Router.MyVideoScreen.route) {
-                    MyVideoScreen().Screen(
-                        videoAndPlaylistViewModel = videoAndPlaylistViewModel,
-                        userViewModel = userViewModel
+                composable<Router.UserProfileScreen>{
+                    val args = it.toRoute<Router.UserProfileScreen>()
+                    UserProfileScreen().Screen(
+                        userId = args.userId,
+                    )
+                }
+                composable<Router.VideoPlayerScreen>{
+                    val args = it.toRoute<Router.VideoPlayerScreen>()
+                    VideoPlayerScreen().Screen(
+                        indexVideo = args.index,
+                        videoAt = args.videoAt,
+                        uploaderId = args.uploaderId
                     )
                 }
             }

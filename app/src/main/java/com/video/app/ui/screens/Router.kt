@@ -1,42 +1,55 @@
 package com.video.app.ui.screens
 
-private var idIncrement = 0;
-fun getIdIn(): Int {
-    return idIncrement++;
+import com.video.app.states.objects.AppInitializerState
+import com.video.app.states.objects.NavigationState
+import kotlinx.serialization.Serializable
+fun Navigate(router:Router){
+    if (router is Router.HomeScreen) NavigationState.navSelected = 1
+    else if (router is Router.SettingScreen) NavigationState.navSelected = 2
+    else if (router is Router.MyProfileScreen) NavigationState.navSelected = 0
+    AppInitializerState.navController.navigate(router)
 }
+sealed class Router{
+    @Serializable
+    data object HomeScreen:Router()
+    @Serializable
+    data object SettingScreen:Router()
+    @Serializable
+    data object LoginScreen:Router()
+    @Serializable
+    data object RegisterScreen:Router()
+    @Serializable
+    data object MyProfileScreen:Router()
 
-sealed class Router(val id: Int, val route: String) {
-    data object HomeScreen : Router(getIdIn(), "home")
-    data object SettingScreen : Router(getIdIn(), "setting")
-    data object LoginScreen : Router(getIdIn(), "login")
-    data object RegisterScreen : Router(getIdIn(), "register")
-    data object MyProfileScreen : Router(getIdIn(), "my_profile")
-    data object YourProfileScreen : Router(getIdIn(), "ur_profile") {
-        fun setArgs(userId: Long): String {
-            return "$route/${userId}";
-        }
-    }
+    @Serializable
+    data class UserProfileScreen(
+        val userId:Long
+    ):Router()
+    @Serializable
+    data object SearchScreen:Router()
+    @Serializable
+    data object ReportScreen:Router()
+    @Serializable
+    data class OTPScreen(
+        val email:String,
+        val token:String
+    ):Router()
+    @Serializable
+    data object VIPRegisterScreen:Router()
 
-    data object SearchScreen : Router(getIdIn(), "search")
-    data object ReportScreen : Router(getIdIn(), "report")
-    data object OTPScreen : Router(getIdIn(), "otp") {
-        fun setArgs(email: String, token: String): String {
-            return "${route}/${email}/${token}"
-        }
-    }
-
-    data object VIPRegisterScreen : Router(getIdIn(), "vip")
-    data object VideoPlayerScreen : Router(getIdIn(), "play") {
-        fun setArgs(index: Int, videoAt: String, uploaderId: Long): String {
-            return "$route/${index}/${uploaderId}/${videoAt}"
-        }
-    }
-
-    data object PlaylistVideoScreen : Router(getIdIn(), "playlist_video") {
-        fun setArgs(playlistId: Long, playlistIndex: Int): String {
-            return "$route/${playlistId}/${playlistIndex}"
-        }
-    }
-    data object UpdateAvatarScreen:Router(getIdIn(),"update_avatar")
-    data object MyVideoScreen:Router(getIdIn(),"my_video")
+    @Serializable
+    data class VideoPlayerScreen(
+        val index:Int,
+        val videoAt:String,
+        val uploaderId:Long
+    ):Router()
+    @Serializable
+    data class PlaylistVideoScreen(
+        val playlistId:Long,
+        val playlistIndex:Int
+    ):Router()
+    @Serializable
+    data object UpdateAvatarScreen:Router()
+    @Serializable
+    data object MyVideoScreen:Router()
 }

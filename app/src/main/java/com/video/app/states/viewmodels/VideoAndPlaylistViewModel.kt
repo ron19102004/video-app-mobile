@@ -29,7 +29,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
 
     //for home screen
     var videosOnHomeScreen = MutableLiveData<List<VideoModel>?>(emptyList())
-    var isFetchingVideosOnHome = mutableStateOf(false)
 
     //for video player screen
     var videosWithUploaderId = MutableLiveData<List<VideoModel>?>(emptyList())
@@ -153,7 +152,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
     }
 
     fun fetchVideosHome(action: () -> Unit = {}) {
-        isFetchingVideosOnHome.value = true
         viewModelScope.launch {
             delay(500L)
             try {
@@ -171,7 +169,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             }
                             Log.e("data-videos", videosOnHomeScreen.value.toString())
                             action()
-                            isFetchingVideosOnHome.value = false
                         }
 
                         override fun onFailure(
@@ -180,19 +177,16 @@ class VideoAndPlaylistViewModel : ViewModel() {
                         ) {
                             Log.e("data-videos-error", t.toString())
                             action()
-                            isFetchingVideosOnHome.value = false
                         }
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
                 action()
-                isFetchingVideosOnHome.value = false
             }
         }
     }
 
     fun fetchVideosHomeWithCategoryId(action: () -> Unit = {}, categoryId: Long) {
-        isFetchingVideosOnHome.value = true
         viewModelScope.launch {
             delay(1000L)
             try {
@@ -216,7 +210,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                                 videosOnHomeScreen.value.toString()
                             )
                             action()
-                            isFetchingVideosOnHome.value = false
                         }
 
                         override fun onFailure(
@@ -225,13 +218,11 @@ class VideoAndPlaylistViewModel : ViewModel() {
                         ) {
                             Log.e("data-videos-error", t.toString())
                             action()
-                            isFetchingVideosOnHome.value = false
                         }
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
                 action()
-                isFetchingVideosOnHome.value = false
             }
         }
     }

@@ -38,13 +38,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.VIP
 import com.video.app.config.CONSTANT
-import com.video.app.ui.screens.Router
 import com.video.app.states.objects.NavigationState
 import com.video.app.states.viewmodels.UserViewModel
+import com.video.app.ui.screens.Navigate
+import com.video.app.ui.screens.Router
 import com.video.app.ui.theme.AppColor
 
 @Composable
@@ -79,10 +79,10 @@ fun NavigationBarBottom(userViewModel: UserViewModel) {
                         .width(60.dp)
                         .clip(RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON))
                         .clickable {
-                            if (listRouter[index].id == Router.MyProfileScreen.id && !userViewModel.isLoggedIn) {
-                                Navigate(Router.LoginScreen.route)
+                            if (index == 0 && !userViewModel.isLoggedIn) {
+                                Navigate(Router.LoginScreen)
                             } else {
-                                NavigationState.navSelected = listRouter[index].id
+                                NavigationState.navSelected = index
                                 Navigate(listRouter[index])
                             }
                         },
@@ -104,7 +104,7 @@ fun NavigationBarBottom(userViewModel: UserViewModel) {
                         text = label, style = TextStyle(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = CONSTANT.UI.TEXT_SIZE.SM_,
-                            color = if (listRouter[index].id == NavigationState.navSelected) {
+                            color = if (index == NavigationState.navSelected) {
                                 AppColor.primary_content
                             } else {
                                 Color.DarkGray

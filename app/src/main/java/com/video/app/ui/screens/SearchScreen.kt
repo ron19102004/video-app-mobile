@@ -42,11 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.VideoModel
 import com.video.app.config.CONSTANT
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
@@ -60,7 +59,10 @@ class SearchScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
-    fun Screen(userViewModel: UserViewModel, videoAndPlaylistViewModel: VideoAndPlaylistViewModel) {
+    fun Screen(
+        userViewModel: UserViewModel = AppInitializerState.userViewModel,
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel
+    ) {
         this.userViewModel = userViewModel
 
         SearchBar(
@@ -95,7 +97,7 @@ class SearchScreen {
                 }
             },
             leadingIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(onClick = { AppInitializerState.navController.popBackStack() }) {
                     Icon(
                         Icons.Rounded.ArrowBack,
                         contentDescription = null,
@@ -134,7 +136,7 @@ class SearchScreen {
                                         onClick = { index, video ->
                                             video?.uploader?.id?.let { uploaderId ->
                                                 Navigate(
-                                                    Router.VideoPlayerScreen.setArgs(
+                                                    Router.VideoPlayerScreen(
                                                         index,
                                                         VideoPlayerScreen.VideoAt.SEARCH_SCREEN,
                                                         uploaderId

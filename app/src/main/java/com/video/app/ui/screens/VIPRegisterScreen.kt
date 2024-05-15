@@ -44,7 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.video.app.R
 import com.video.app.config.CONSTANT
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Heading
 import com.video.app.states.objects.UiState
@@ -53,7 +53,7 @@ import com.video.app.ui.theme.AppColor
 
 class VIPRegisterScreen {
     @Composable
-    fun Screen(userViewModel: UserViewModel) {
+    fun Screen(userViewModel: UserViewModel= AppInitializerState.userViewModel) {
         var (monthSelected, setMonthSelected) = remember {
             mutableIntStateOf(0)
         }
@@ -80,7 +80,7 @@ class VIPRegisterScreen {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {
-                    navController.popBackStack()
+                    AppInitializerState.navController.popBackStack()
                 }) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = AppColor.primary_text)
                 }

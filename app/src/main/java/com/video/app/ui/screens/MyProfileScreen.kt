@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.CreatePlaylistDto
 import com.video.app.api.models.PlaylistModel
@@ -68,6 +67,7 @@ import com.video.app.api.models.Privacy
 import com.video.app.api.models.UserModel
 import com.video.app.api.models.VIP
 import com.video.app.config.CONSTANT
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.layouts.MainLayout
 import com.video.app.states.viewmodels.UserViewModel
@@ -94,8 +94,8 @@ class MyProfileScreen {
 
     @Composable
     fun Screen(
-        userViewModel: UserViewModel,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel
+        userViewModel: UserViewModel = AppInitializerState.userViewModel,
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel=AppInitializerState.videoAndPlaylistViewModel
     ) {
         this.userViewModel = userViewModel
         this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
@@ -479,12 +479,10 @@ class MyProfileScreen {
                                 index = it,
                                 playlistModel = playlist,
                                 onClick = { playlistId, playlistIndex ->
-                                    Navigate(
-                                        Router.PlaylistVideoScreen.setArgs(
-                                            playlistId,
-                                            playlistIndex
-                                        )
-                                    )
+                                    Navigate(Router.PlaylistVideoScreen(
+                                        playlistId = playlistId,
+                                        playlistIndex = playlistIndex
+                                    ))
                                 }, onLongClick = {
                                     idPlaylistSelectedToDelete.value = it
                                     openOptionOnLongLickPlaylist.value = true

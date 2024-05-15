@@ -25,9 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asFlow
-import com.video.app.Navigate
 import com.video.app.config.CONSTANT
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.Heading
@@ -41,8 +40,8 @@ class MyVideoScreen {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     fun Screen(
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel,
-        userViewModel: UserViewModel
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel,
+        userViewModel: UserViewModel = AppInitializerState.userViewModel
     ) {
         videoAndPlaylistViewModel.getMyVideos()
         var videos =
@@ -60,7 +59,7 @@ class MyVideoScreen {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = {
-                        navController.popBackStack()
+                        AppInitializerState.navController.popBackStack()
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
@@ -104,13 +103,11 @@ class MyVideoScreen {
                                         videoModel = video,
                                         onClick = { index, video ->
                                             video?.uploader?.id?.let { uploaderId ->
-                                                Navigate(
-                                                    Router.VideoPlayerScreen.setArgs(
-                                                        index,
-                                                        VideoPlayerScreen.VideoAt.MY_VIDEO_SCREEN,
-                                                        uploaderId
-                                                    )
-                                                )
+                                                Navigate(Router.VideoPlayerScreen(
+                                                    index = index,
+                                                    videoAt = VideoPlayerScreen.VideoAt.MY_VIDEO_SCREEN,
+                                                    uploaderId = uploaderId
+                                                ))
                                             }
                                         },
                                         onLongClick = {}

@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.video.app.R
 import com.video.app.config.CONSTANT
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Heading
@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
 
 class UpdateAvatarScreen {
     @Composable
-    fun Screen(userViewModel: UserViewModel) {
+    fun Screen(userViewModel: UserViewModel= AppInitializerState.userViewModel) {
         var imageSelected by remember {
             mutableStateOf<Uri?>(null)
         }
@@ -71,7 +71,7 @@ class UpdateAvatarScreen {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = {
-                        navController.popBackStack()
+                        AppInitializerState.navController.popBackStack()
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,

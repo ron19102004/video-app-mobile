@@ -44,10 +44,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.URL
 import com.video.app.config.CONSTANT
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.components.Input
@@ -63,7 +63,7 @@ class SettingScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun Screen(userViewModel: UserViewModel) {
+    fun Screen(userViewModel: UserViewModel= AppInitializerState.userViewModel) {
         this.userViewModel = userViewModel
         var showDevTools by remember { mutableStateOf(false) }
         val stateDevTools = rememberModalBottomSheetState()
@@ -128,7 +128,7 @@ class SettingScreen {
                         Spacer(modifier = Modifier.height(10.dp))
                         BtnText(onClick = { userViewModel.logout() }, text = "Logout")
                     } else
-                        BtnText(onClick = { Navigate(Router.LoginScreen.route) }, text = "Login")
+                        BtnText(onClick = { Navigate(Router.LoginScreen) }, text = "Login")
                     Spacer(modifier = Modifier.height(10.dp))
                     TextButton(
                         onClick = { Navigate(Router.ReportScreen) },

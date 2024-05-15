@@ -48,11 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.asFlow
 import coil.compose.AsyncImage
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.Privacy
 import com.video.app.config.CONSTANT
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.BtnText
@@ -73,8 +72,8 @@ class PlaylistVideoScreen {
     fun Screen(
         playlistIndex: Int,
         playlistId: Long,
-        userViewModel: UserViewModel,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel
+        userViewModel: UserViewModel = AppInitializerState.userViewModel,
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel=AppInitializerState.videoAndPlaylistViewModel
     ) {
         videoAndPlaylistViewModel.getVideosPlaylist(playlistId = playlistId)
         val playlist = videoAndPlaylistViewModel.myPlaylist.value?.get(playlistIndex)
@@ -94,7 +93,7 @@ class PlaylistVideoScreen {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = {
-                        navController.popBackStack()
+                        AppInitializerState.navController.popBackStack()
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
@@ -220,13 +219,11 @@ class PlaylistVideoScreen {
                                         videoModel = video,
                                         onClick = { index, video ->
                                             video?.uploader?.id?.let { uploaderId ->
-                                                Navigate(
-                                                    Router.VideoPlayerScreen.setArgs(
-                                                        index,
-                                                        VideoPlayerScreen.VideoAt.PLAYLIST_SCREEN,
-                                                        uploaderId
-                                                    )
-                                                )
+                                                Navigate(Router.VideoPlayerScreen(
+                                                    index,
+                                                    VideoPlayerScreen.VideoAt.PLAYLIST_SCREEN,
+                                                    uploaderId
+                                                ))
                                             }
                                         }
                                     )

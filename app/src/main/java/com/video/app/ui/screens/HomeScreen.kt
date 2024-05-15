@@ -58,10 +58,10 @@ import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.video.app.Navigate
 import com.video.app.R
 import com.video.app.api.models.VideoModel
 import com.video.app.config.CONSTANT
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.layouts.MainLayout
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
@@ -88,9 +88,9 @@ class HomeScreen {
 
     @Composable
     fun Screen(
-        userViewModel: UserViewModel,
-        categoryAndCountryViewModel: CategoryAndCountryViewModel,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel
+        userViewModel: UserViewModel = AppInitializerState.userViewModel,
+        categoryAndCountryViewModel: CategoryAndCountryViewModel = AppInitializerState.categoryAndCountryViewModel,
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel
     ) {
         this.userViewModel = userViewModel
         this.categoryAndCountryViewModel = categoryAndCountryViewModel
@@ -146,42 +146,29 @@ class HomeScreen {
                     },
                     modifier = Modifier.fillMaxSize(),
                     contentFix = {
-                        if (videoAndPlaylistViewModel.isFetchingVideosOnHome.value) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Spacer(modifier = Modifier.height(30.dp))
-                                CircularProgressIndicator(color = AppColor.primary_text)
-                                Spacer(modifier = Modifier.height(30.dp))
-                            }
-                        } else {
-                            if (videos?.value?.isNullOrEmpty() == false) {
-                                videos?.value?.forEachIndexed { index, video ->
-                                    VideoCard(
-                                        index = index,
-                                        videoModel = video,
-                                        onClick = { index, video ->
-                                            video?.uploader?.id?.let {
-                                                Navigate(
-                                                    Router.VideoPlayerScreen.setArgs(
-                                                        index,
-                                                        VideoPlayerScreen.VideoAt.HOME_SCREEN,
-                                                        it
-                                                    )
+                        if (videos?.value?.isNullOrEmpty() == false) {
+                            videos?.value?.forEachIndexed { index, video ->
+                                VideoCard(
+                                    index = index,
+                                    videoModel = video,
+                                    onClick = { index, video ->
+                                        video?.uploader?.id?.let {
+                                            Navigate(
+                                                Router.VideoPlayerScreen(
+                                                    index = index,
+                                                    videoAt = VideoPlayerScreen.VideoAt.HOME_SCREEN,
+                                                    uploaderId = it
                                                 )
-                                            }
-                                        },
-                                        onLongClick = {
-                                            videoBeOnLongClick.value = it
-                                            if (videoBeOnLongClick.value.id != null)
-                                                openOptionVideoOnLongClick.value = true
+                                            )
                                         }
-                                    )
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                }
+                                    },
+                                    onLongClick = {
+                                        videoBeOnLongClick.value = it
+                                        if (videoBeOnLongClick.value.id != null)
+                                            openOptionVideoOnLongClick.value = true
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(20.dp))
                             }
                         }
                     }
@@ -208,7 +195,11 @@ class HomeScreen {
                             text = "Go to ${nameUploader[nameUploader.size - 1]} account"
                         ) {
                             videoBeOnLongClick?.value?.uploader?.id?.let {
-                                Navigate(Router.YourProfileScreen.setArgs(it))
+                                Navigate(
+                                    Router.UserProfileScreen(
+                                        userId = it
+                                    )
+                                )
                             }
                         }
                     }

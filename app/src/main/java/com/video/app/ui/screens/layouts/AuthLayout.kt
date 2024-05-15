@@ -14,7 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.video.app.navController
+import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.theme.AppColor
 
 @Composable
@@ -28,7 +28,7 @@ fun AuthLayout(content: @Composable () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {
-                    navController.popBackStack()
+                    AppInitializerState.navController.popBackStack()
                 }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
