@@ -1,6 +1,7 @@
 package com.video.app.api.repositories
 
 import com.video.app.api.ResponseLayout
+import com.video.app.api.models.ChangePasswordRequest
 import com.video.app.api.models.CreatePlaylistDto
 import com.video.app.api.models.PlaylistModel
 import com.video.app.api.models.VideoModel
@@ -19,14 +20,23 @@ interface VideoAndPlaylistRepository {
     fun myPlaylist(): Call<ResponseLayout<List<PlaylistModel>?>>
 
     @Headers("Content-Type: application/json")
+    @GET("playlists/user-confirmed")
+    fun userConfirmedPlaylist(@Query("userId") userId: Long): Call<ResponseLayout<List<PlaylistModel>?>>
+
+    @Headers("Content-Type: application/json")
     @POST("playlists/new")
     fun addPlaylist(@Body createPlaylistDto: CreatePlaylistDto): Call<ResponseLayout<PlaylistModel?>>
 
     @Headers("Content-Type: application/json")
     @GET("playlists/videos")
-    fun getVideosPlaylist(
+    fun getMyVideosPlaylist(
         @Query("playlistId") playlistId: Long
     ): Call<ResponseLayout<List<VideoModel>>>
+    @Headers("Content-Type: application/json")
+    @GET("playlists/public/videos")
+    fun getUserVideosPlaylist(
+        @Query("playlistId") playlistId: Long
+    ): Call<ResponseLayout<List<VideoModel>?>>
 
     @Headers("Content-Type: application/json")
     @POST("playlists/add")
@@ -66,8 +76,9 @@ interface VideoAndPlaylistRepository {
     @Headers("Content-Type: application/json")
     @GET("videos/search")
     fun searchByNameLike(@Query("name") name: String): Call<ResponseLayout<List<VideoModel>>>
+
     @Headers("Content-Type: application/json")
-    @GET("videos/my-video")
+    @GET("videos/my-videos")
     fun getAllMyVideo(): Call<ResponseLayout<List<VideoModel>>>
 
 }

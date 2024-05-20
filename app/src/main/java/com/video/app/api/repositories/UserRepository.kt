@@ -1,7 +1,7 @@
 package com.video.app.api.repositories
 
-import com.video.app.api.ApiResponse
 import com.video.app.api.ResponseLayout
+import com.video.app.api.models.ChangePasswordRequest
 import com.video.app.api.models.InfoConfirmedLoggedInResponse
 import com.video.app.api.models.InfoUserResponse
 import com.video.app.api.models.LoginRequest
@@ -74,5 +74,9 @@ interface UserRepository {
     @Headers("Content-Type: application/json")
     @DELETE("users/unsubscribe")
     fun unsubscribe(@Query("id") id: Long): Call<ResponseLayout<Any>>
+
+    @Headers("Content-Type: application/json")
+    @PATCH("users/change-password")
+    fun changePassword(@Body data: ChangePasswordRequest):Call<ResponseLayout<Any>>
 
 }

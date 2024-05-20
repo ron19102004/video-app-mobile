@@ -107,15 +107,15 @@ class VideoPlayerScreen {
     private var openOnLongClickVideoCard = mutableStateOf(false)
     private var openAddPlaylist = mutableStateOf(false)
 
-    @kotlin.OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
     @Composable
     fun Screen(
-        userViewModel: UserViewModel= AppInitializerState.userViewModel,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel=AppInitializerState.videoAndPlaylistViewModel,
+        userViewModel: UserViewModel = AppInitializerState.userViewModel,
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel,
         indexVideo: Int,
         videoAt: String,
-        uploaderId: Long
+        uploaderId: Long,
+        playlistAt: String
     ) {
         videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = uploaderId)
         activity = LocalContext.current as Activity
@@ -136,7 +136,17 @@ class VideoPlayerScreen {
                 }
 
                 VideoAt.PLAYLIST_SCREEN -> {
-                    videoAndPlaylistViewModel.videosOfPlaylistId.value?.get(indexVideo)!!
+                    when (playlistAt) {
+                        PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN -> {
+                            videoAndPlaylistViewModel.videosOfMyPlaylistId.value?.get(indexVideo)!!
+                        }
+
+                        PlaylistVideoScreen.PlaylistAt.USER_PROFILE_SCREEN -> {
+                            videoAndPlaylistViewModel.videosOfUserPlaylistId.value?.get(indexVideo)!!
+                        }
+
+                        else -> VideoModel()
+                    }
                 }
 
                 VideoAt.MY_VIDEO_SCREEN -> {
@@ -223,11 +233,14 @@ class VideoPlayerScreen {
                                         videoModel = video,
                                         onClick = { index, video ->
                                             video?.uploader?.id?.let { uploaderId ->
-                                                Navigate(Router.VideoPlayerScreen(
-                                                    index,
-                                                    VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
-                                                    uploaderId
-                                                ))
+                                                Navigate(
+                                                    Router.VideoPlayerScreen(
+                                                        index,
+                                                        VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
+                                                        uploaderId,
+                                                        playlistAt
+                                                    )
+                                                )
                                             }
                                         },
                                         onLongClick = { video ->
@@ -380,9 +393,11 @@ class VideoPlayerScreen {
                                 if (uploaderId != null) {
                                     userViewModel.fetchInfoUserConfirmed(id = uploaderId)
                                     videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = uploaderId)
-                                    Navigate(Router.UserProfileScreen(
-                                        userId = uploaderId
-                                    ))
+                                    Navigate(
+                                        Router.UserProfileScreen(
+                                            userId = uploaderId
+                                        )
+                                    )
                                 }
                             },
                         horizontalArrangement = Arrangement.Start,

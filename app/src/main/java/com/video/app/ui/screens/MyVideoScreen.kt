@@ -84,7 +84,7 @@ class MyVideoScreen {
                 },
                 modifier = Modifier.padding(10.dp, it.calculateTopPadding(), 10.dp, 0.dp),
                 contentFix = {
-                    if (videoAndPlaylistViewModel.isFetchingMyVideo.value) {
+                    if (isRefreshing) {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.Center,
@@ -106,7 +106,8 @@ class MyVideoScreen {
                                                 Navigate(Router.VideoPlayerScreen(
                                                     index = index,
                                                     videoAt = VideoPlayerScreen.VideoAt.MY_VIDEO_SCREEN,
-                                                    uploaderId = uploaderId
+                                                    uploaderId = uploaderId,
+                                                    "null"
                                                 ))
                                             }
                                         },

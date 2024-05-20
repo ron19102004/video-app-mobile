@@ -2,6 +2,7 @@ package com.video.app.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -38,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -65,15 +70,19 @@ class UserProfileScreen {
     private lateinit var infoUserConfirmed: State<UserModel?>
     private val tabTitles = listOf("Videos", "Playlists")
     private var tabSelected = mutableIntStateOf(0)
+    private var isRefreshing = mutableStateOf(false)
+
 
     //for bottom sheet
     private var openUnsubscribeSheet = mutableStateOf(false)
 
     private fun init(userId: Long) {
-        if (userViewModel?.isLoggedIn == true)
-            userViewModel.fetchInfoUserConfirmedWhenLoggedIn(id = userId)
+        if (userViewModel?.isLoggedIn == true) userViewModel.fetchInfoUserConfirmedWhenLoggedIn(id = userId)
         else userViewModel.fetchInfoUserConfirmed(id = userId)
         videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = userId)
+        videoAndPlaylistViewModel.fetchPlaylistOfUserConfirmed(id = userId) {
+            isRefreshing.value = false
+        }
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -81,8 +90,8 @@ class UserProfileScreen {
     @Composable
     fun Screen(
         userId: Long,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel= AppInitializerState.videoAndPlaylistViewModel,
-        userViewModel: UserViewModel=AppInitializerState.userViewModel
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel,
+        userViewModel: UserViewModel = AppInitializerState.userViewModel
     ) {
         this.userViewModel = userViewModel
         this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
@@ -91,9 +100,6 @@ class UserProfileScreen {
             userViewModel.infoUserConfirmed.asFlow().collectAsState(initial = UserModel())
         var enabledButtonSubscribe by remember {
             mutableStateOf(true)
-        }
-        var isRefreshing by remember {
-            mutableStateOf(false)
         }
         val scope = rememberCoroutineScope()
         //ui
@@ -120,17 +126,15 @@ class UserProfileScreen {
                 )
             }
         }) {
-            PullToRefreshLazyColumn<Any>(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp, it.calculateTopPadding(), 10.dp, 0.dp),
-                isRefreshing = isRefreshing,
+            PullToRefreshLazyColumn<Any>(modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp, it.calculateTopPadding(), 10.dp, 0.dp),
+                isRefreshing = isRefreshing.value,
                 onRefresh = {
                     scope.launch {
-                        isRefreshing = true
+                        isRefreshing.value = true
                         delay(1000L)
                         init(userId)
-                        isRefreshing = false
                     }
                 },
                 contentFix = {
@@ -227,8 +231,7 @@ class UserProfileScreen {
                         0 -> Videos()
                         1 -> Playlists()
                     }
-                }
-            )
+                })
         }
         ModalBottomSheetContainer()
     }
@@ -296,11 +299,14 @@ class UserProfileScreen {
                     videos?.value?.forEachIndexed { index, video ->
                         VideoCard(index = index, videoModel = video, onClick = { index, video ->
                             video?.uploader?.id?.let { uploaderId ->
-                                Navigate(Router.VideoPlayerScreen(
-                                    index,
-                                    VideoPlayerScreen.VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
-                                    uploaderId
-                                ))
+                                Navigate(
+                                    Router.VideoPlayerScreen(
+                                        index,
+                                        VideoPlayerScreen.VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE,
+                                        uploaderId,
+                                        PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN
+                                    )
+                                )
                             }
 
                         }, onLongClick = {})
@@ -337,6 +343,82 @@ class UserProfileScreen {
 
     @Composable
     private fun Playlists() {
+        val playlists =
+            videoAndPlaylistViewModel.userPlaylist.asFlow().collectAsState(initial = emptyList())
+        if (!isRefreshing.value) {
+            if (playlists?.value?.isNullOrEmpty() == false) {
+                Column {
+                    playlists?.value?.forEachIndexed { index, playlist ->
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = AppColor.background,
+                            ),
+                            onClick = {
+                                Navigate(
+                                    Router.PlaylistVideoScreen(
+                                        playlistId = playlist?.id ?: 0,
+                                        playlistIndex = index,
+                                        playlistAt = PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN,
+                                    )
+                                )
+                            },
 
+                            ) {
+                            val imgModifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON))
+                                .background(
+                                    Color.Transparent,
+                                    RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON)
+                                )
+                            val errorImg = painterResource(id = R.drawable.video_logo1)
+                            Box(modifier = imgModifier) {
+                                AsyncImage(
+                                    model = playlist.image,
+                                    contentDescription = null,
+                                    modifier = imgModifier,
+                                    contentScale = ContentScale.Crop,
+                                    placeholder = errorImg,
+                                    error = errorImg
+
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Heading(
+                                text = playlist.name ?: "Unknown",
+                                size = CONSTANT.UI.TEXT_SIZE.MD,
+                                maxLines = 2
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(30.dp))
+                    Heading(
+                        text = "Playlist empty",
+                        size = CONSTANT.UI.TEXT_SIZE.MD,
+                        color = AppColor.background_container
+                    )
+                    Spacer(modifier = Modifier.height(30.dp))
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(30.dp))
+                CircularProgressIndicator(color = AppColor.primary_text)
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+        }
     }
 }

@@ -46,10 +46,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asFlow
 import coil.compose.AsyncImage
 import com.video.app.R
 import com.video.app.api.models.Privacy
+import com.video.app.api.models.VideoModel
 import com.video.app.config.CONSTANT
 import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.viewmodels.UserViewModel
@@ -64,24 +66,58 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class PlaylistVideoScreen {
+    object PlaylistAt {
+        const val MY_PROFILE_SCREEN = "my_profile_screen"
+        const val USER_PROFILE_SCREEN = "user_profile_screen"
+    }
+
     private var openShareDialog = mutableStateOf(false)
     private var isPlaylistPublic = mutableStateOf(false)
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     fun Screen(
+        playlistAt: String,
         playlistIndex: Int,
         playlistId: Long,
         userViewModel: UserViewModel = AppInitializerState.userViewModel,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel=AppInitializerState.videoAndPlaylistViewModel
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel
     ) {
-        videoAndPlaylistViewModel.getVideosPlaylist(playlistId = playlistId)
-        val playlist = videoAndPlaylistViewModel.myPlaylist.value?.get(playlistIndex)
-        isPlaylistPublic.value = playlist?.privacy == Privacy.PUBLIC
-        val videos = videoAndPlaylistViewModel.videosOfPlaylistId.asFlow()
-            .collectAsState(initial = emptyList())
         var isRefreshing by remember {
-            mutableStateOf(false)
+            mutableStateOf(true)
+        }
+        val playlist = when (playlistAt) {
+            PlaylistAt.MY_PROFILE_SCREEN -> {
+                videoAndPlaylistViewModel.getMyVideosPlaylist(playlistId = playlistId, action = {
+                    isRefreshing = false
+                })
+                videoAndPlaylistViewModel.myPlaylist.value?.get(
+                    playlistIndex
+                )
+            }
+
+            PlaylistAt.USER_PROFILE_SCREEN -> {
+                videoAndPlaylistViewModel.getUserVideosPlaylist(
+                    playlistId = playlistId,
+                    action = {
+                        isRefreshing = false
+                    })
+                videoAndPlaylistViewModel.userPlaylist.value?.get(
+                    playlistIndex
+                )
+            }
+
+            else -> null
+        }
+        isPlaylistPublic.value = playlist?.privacy == Privacy.PUBLIC
+        val videos = when (playlistAt) {
+            PlaylistAt.MY_PROFILE_SCREEN -> {
+                videoAndPlaylistViewModel.videosOfMyPlaylistId.asFlow()
+                    .collectAsState(initial = emptyList())
+            }
+
+            else -> MutableLiveData<List<VideoModel>>(emptyList()).asFlow()
+                .collectAsState(initial = emptyList())
         }
         val scope = rememberCoroutineScope()
         Scaffold(
@@ -112,8 +148,17 @@ class PlaylistVideoScreen {
                 onRefresh = {
                     scope.launch {
                         isRefreshing = true
-                        videoAndPlaylistViewModel.getVideosPlaylist(playlistId = playlistId)
-                        isRefreshing = false
+                        when (playlistAt) {
+                            PlaylistAt.MY_PROFILE_SCREEN -> {
+                                videoAndPlaylistViewModel.getMyVideosPlaylist(
+                                    playlistId = playlistId,
+                                    action = {
+                                        isRefreshing = false
+
+                                    }
+                                )
+                            }
+                        }
                     }
                 },
                 contentFix = {
@@ -201,7 +246,7 @@ class PlaylistVideoScreen {
                                 }
                             }
                             Spacer(modifier = Modifier.height(35.dp))
-                            if (videoAndPlaylistViewModel.isFetchingVideosPlaylist.value) {
+                            if (isRefreshing) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth(),
@@ -219,11 +264,14 @@ class PlaylistVideoScreen {
                                         videoModel = video,
                                         onClick = { index, video ->
                                             video?.uploader?.id?.let { uploaderId ->
-                                                Navigate(Router.VideoPlayerScreen(
-                                                    index,
-                                                    VideoPlayerScreen.VideoAt.PLAYLIST_SCREEN,
-                                                    uploaderId
-                                                ))
+                                                Navigate(
+                                                    Router.VideoPlayerScreen(
+                                                        index,
+                                                        VideoPlayerScreen.VideoAt.PLAYLIST_SCREEN,
+                                                        uploaderId,
+                                                        playlistAt
+                                                    )
+                                                )
                                             }
                                         }
                                     )

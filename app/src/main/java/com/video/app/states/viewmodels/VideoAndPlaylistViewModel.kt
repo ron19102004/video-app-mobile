@@ -30,23 +30,25 @@ class VideoAndPlaylistViewModel : ViewModel() {
     //for home screen
     var videosOnHomeScreen = MutableLiveData<List<VideoModel>?>(emptyList())
 
-    //for video player screen
+    //for video player screen and user profile screen
     var videosWithUploaderId = MutableLiveData<List<VideoModel>?>(emptyList())
     var isErrorFetchVideoWithUploaderId = mutableStateOf(false)
     var isLoadingVideosWithUploaderId = mutableStateOf(false)
 
+
     //for search screen
     var queryOnSearchScreen = mutableStateOf("")
     var videosOnSearchScreen = MutableLiveData<List<VideoModel>?>(emptyList())
-    var isLoadingSearchVideo = mutableStateOf(false)
 
-    //for playlist
+    //for my playlist
     var myPlaylist = MutableLiveData<List<PlaylistModel>?>(emptyList())
-    var videosOfPlaylistId = MutableLiveData<List<VideoModel>?>(emptyList())
-    var isFetchingVideosPlaylist = mutableStateOf(false)
+    var videosOfMyPlaylistId = MutableLiveData<List<VideoModel>?>(emptyList())
+
+    //for user playlist
+    var userPlaylist = MutableLiveData<List<PlaylistModel>?>(emptyList())
+    var videosOfUserPlaylistId = MutableLiveData<List<VideoModel>?>(emptyList())
 
     //for my video screen
-    var isFetchingMyVideo = mutableStateOf(false)
     var myVideos = MutableLiveData<List<VideoModel>?>(emptyList())
 
 
@@ -57,8 +59,40 @@ class VideoAndPlaylistViewModel : ViewModel() {
         }
     }
 
+    fun fetchPlaylistOfUserConfirmed(id: Long, action: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                videoAndPlaylistRepository.userConfirmedPlaylist(id)!!
+                    .enqueue(object : Callback<ResponseLayout<List<PlaylistModel>?>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<List<PlaylistModel>?>>,
+                            response: Response<ResponseLayout<List<PlaylistModel>?>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<List<PlaylistModel>?>? = response.body()
+                                if (res?.status == true) {
+                                    userPlaylist.value = res.data
+                                }
+                                Log.e("data-playlist", res.toString())
+                            }
+                            action()
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<List<PlaylistModel>?>>,
+                            t: Throwable
+                        ) {
+                            action()
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                action()
+            }
+        }
+    }
+
     fun getMyVideos(action: () -> Unit = {}) {
-        isFetchingMyVideo.value = true
         viewModelScope.launch {
             delay(500L)
             try {
@@ -79,7 +113,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                                 Toast.LENGTH_LONG
                             )
                                 .show()
-                            isFetchingMyVideo.value = false
                             action()
                         }
 
@@ -87,7 +120,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             call: Call<ResponseLayout<List<VideoModel>>>,
                             t: Throwable
                         ) {
-                            isFetchingMyVideo.value = false
                             action()
                             Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                                 .show()
@@ -95,7 +127,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
-                isFetchingMyVideo.value = false
                 action()
                 Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                     .show()
@@ -104,7 +135,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
     }
 
     fun searchVideosByName(name: String, action: () -> Unit = {}) {
-        isLoadingSearchVideo.value = true
         videosOnSearchScreen.value = emptyList()
         viewModelScope.launch {
             try {
@@ -125,7 +155,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                                 Toast.LENGTH_LONG
                             )
                                 .show()
-                            isLoadingSearchVideo.value = false
                             Log.e("search-data-videos", videosOnSearchScreen.value.toString())
                             action()
                         }
@@ -135,7 +164,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             t: Throwable
                         ) {
                             Log.e("search-videos-error", t.toString())
-                            isLoadingSearchVideo.value = false
                             action()
                             Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                                 .show()
@@ -143,7 +171,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                     })
             } catch (e: Exception) {
                 e.printStackTrace()
-                isLoadingSearchVideo.value = false
                 action()
                 Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                     .show()
@@ -447,12 +474,11 @@ class VideoAndPlaylistViewModel : ViewModel() {
         }
     }
 
-    fun getVideosPlaylist(action: () -> Unit = {}, playlistId: Long) {
-        isFetchingVideosPlaylist.value = true
+    fun getMyVideosPlaylist(action: () -> Unit = {}, playlistId: Long) {
         viewModelScope.launch {
             try {
                 delay(1000L)
-                videoAndPlaylistRepository.getVideosPlaylist(playlistId)!!
+                videoAndPlaylistRepository.getMyVideosPlaylist(playlistId)!!
                     .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
                         override fun onResponse(
                             call: Call<ResponseLayout<List<VideoModel>>>,
@@ -461,12 +487,11 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             if (response.isSuccessful) {
                                 val res: ResponseLayout<List<VideoModel>>? = response?.body()
                                 if (res?.status == true) {
-                                    videosOfPlaylistId.value = res?.data
+                                    videosOfMyPlaylistId.value = res?.data
                                 }
                                 Log.e("video-playlists", res.toString())
                             }
                             action()
-                            isFetchingVideosPlaylist.value = false
                         }
 
                         override fun onFailure(
@@ -476,7 +501,6 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                                 .show()
                             action()
-                            isFetchingVideosPlaylist.value = false
                         }
                     })
             } catch (e: Exception) {
@@ -484,7 +508,43 @@ class VideoAndPlaylistViewModel : ViewModel() {
                 Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
                     .show()
                 action()
-                isFetchingVideosPlaylist.value = false
+            }
+        }
+    }
+
+    fun getUserVideosPlaylist(action: () -> Unit = {}, playlistId: Long) {
+        viewModelScope.launch {
+            try {
+                delay(1000L)
+                videoAndPlaylistRepository.getUserVideosPlaylist(playlistId)!!
+                    .enqueue(object : Callback<ResponseLayout<List<VideoModel>?>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<List<VideoModel>?>>,
+                            response: Response<ResponseLayout<List<VideoModel>?>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<List<VideoModel>?>? = response?.body()
+                                if (res?.status == true) {
+                                    videosOfUserPlaylistId.value = res?.data
+                                }
+                            }
+                            action()
+                        }
+
+                        override fun onFailure(
+                            call: Call<ResponseLayout<List<VideoModel>?>>,
+                            t: Throwable
+                        ) {
+                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                                .show()
+                            action()
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
+                    .show()
+                action()
             }
         }
     }

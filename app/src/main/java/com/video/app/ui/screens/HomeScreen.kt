@@ -157,7 +157,8 @@ class HomeScreen {
                                                 Router.VideoPlayerScreen(
                                                     index = index,
                                                     videoAt = VideoPlayerScreen.VideoAt.HOME_SCREEN,
-                                                    uploaderId = it
+                                                    uploaderId = it,
+                                                    PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN
                                                 )
                                             )
                                         }
@@ -255,6 +256,7 @@ class HomeScreen {
             LazyRow {
                 item {
                     Tag(-1, "All") {
+                        btnTagSelected.value = -1
                         videoAndPlaylistViewModel
                             .fetchVideosHome()
                     }

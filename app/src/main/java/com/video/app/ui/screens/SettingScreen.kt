@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.video.app.R
 import com.video.app.api.URL
+import com.video.app.api.models.ChangePasswordRequest
 import com.video.app.config.CONSTANT
 import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.components.BtnText
@@ -60,13 +63,12 @@ import kotlinx.coroutines.launch
 
 class SettingScreen {
     private lateinit var userViewModel: UserViewModel
+    private var openChangePasswordModal = mutableStateOf(false)
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun Screen(userViewModel: UserViewModel= AppInitializerState.userViewModel) {
+    fun Screen(userViewModel: UserViewModel = AppInitializerState.userViewModel) {
         this.userViewModel = userViewModel
-        var showDevTools by remember { mutableStateOf(false) }
-        val stateDevTools = rememberModalBottomSheetState()
         MainLayout(userViewModel = userViewModel) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -88,24 +90,6 @@ class SettingScreen {
             HorizontalDivider(color = AppColor.background_container)
             LazyColumn {
                 item {
-//                    Spacer(modifier = Modifier.height(10.dp))
-//                    ItemContainer(
-//                        contentLeft = {
-//                            TextIconImage(
-//                                text = "Devtools",
-//                                painter = painterResource(id = R.drawable.for_dev)
-//                            )
-//                        },
-//                        contentRight = {
-//                            IconButton(onClick = { showDevTools = true }) {
-//                                Icon(
-//                                    imageVector = Icons.Rounded.Build,
-//                                    contentDescription = null,
-//                                    tint = AppColor.primary_text
-//                                )
-//                            }
-//                        }
-//                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     if (userViewModel.isLoggedIn) {
                         ItemContainer(
@@ -126,6 +110,24 @@ class SettingScreen {
                             }
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+                        ItemContainer(
+                            contentLeft = {
+                                TextIconImage(
+                                    text = "Change password",
+                                    painter = painterResource(id = R.drawable.password_icon)
+                                )
+                            },
+                            contentRight = {
+                                IconButton(onClick = { openChangePasswordModal.value = true }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Build,
+                                        contentDescription = null,
+                                        tint = AppColor.primary_text
+                                    )
+                                }
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
                         BtnText(onClick = { userViewModel.logout() }, text = "Logout")
                     } else
                         BtnText(onClick = { Navigate(Router.LoginScreen) }, text = "Login")
@@ -139,18 +141,157 @@ class SettingScreen {
                 }
             }
         }
-        if (showDevTools)
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showDevTools = false
-                }, sheetState = stateDevTools,
-                containerColor = AppColor.background
-            ) {
-                DevTools(hideModal = {
-                    showDevTools = false
-                })
+        ModalBottomSheetsContainer()
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun ModalBottomSheetsContainer() {
+        val openChangePasswordModalState = rememberModalBottomSheetState()
+        if (openChangePasswordModal.value) {
+            var passwordCurrent by remember {
+                mutableStateOf("")
+            }
+            var passwordNew by remember {
+                mutableStateOf("")
+            }
+            var rePasswordNew by remember {
+                mutableStateOf("")
+            }
+            var isErrorPasswordCurrent by remember {
+                mutableStateOf(false)
+            }
+            var isErrorPasswordNew by remember {
+                mutableStateOf(false)
+            }
+            var isErrorRePasswordNew by remember {
+                mutableStateOf(false)
+            }
+            var passwordCurrentMessage by remember {
+                mutableStateOf("")
+            }
+            var passwordNewMessage by remember {
+                mutableStateOf("")
+            }
+            var rePasswordNewMessage by remember {
+                mutableStateOf("")
             }
 
+            var errorValid by remember {
+                mutableStateOf(false)
+            }
+            val validate: () -> Unit = {
+                if (passwordCurrent.isBlank()) {
+                    isErrorPasswordCurrent = true
+                    passwordCurrentMessage = "Password current must not blank"
+                    errorValid = true
+                } else {
+                    if (passwordCurrent.length < 8) {
+                        isErrorPasswordCurrent = true
+                        passwordCurrentMessage = "Password current must at least 8 characters"
+                        errorValid = true
+                    }
+                }
+                if (passwordNew.isBlank()) {
+                    isErrorPasswordNew = true
+                    passwordNewMessage = "Password new must not blank"
+                    errorValid = true
+                } else {
+                    if (passwordNew.length < 8) {
+                        isErrorPasswordNew = true
+                        passwordNewMessage = "Password new must at least 8 characters"
+                        errorValid = true
+                    }
+                }
+                if (rePasswordNew.isBlank()) {
+                    isErrorRePasswordNew = true
+                    rePasswordNewMessage = "Re password new must not blank"
+                    errorValid = true
+                } else {
+                    if (rePasswordNew.length < 8) {
+                        isErrorRePasswordNew = true
+                        rePasswordNewMessage = "Re password new must at least 8 characters"
+                        errorValid = true
+                    } else {
+                        if (passwordNew != rePasswordNew) {
+                            isErrorRePasswordNew = true
+                            rePasswordNewMessage = "Re password new must same with password new"
+                            errorValid = true
+                        }
+                    }
+                }
+            }
+            ModalBottomSheet(
+                onDismissRequest = { openChangePasswordModal.value = false },
+                sheetState = openChangePasswordModalState,
+                containerColor = AppColor.background,
+
+                ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                ) {
+                    Heading(text = "Change password", size = CONSTANT.UI.TEXT_SIZE.LG)
+                    Input(
+                        value = passwordCurrent,
+                        onValueChange = {
+                            isErrorPasswordCurrent = false
+                            passwordCurrent = it
+                        },
+                        label = "Password current",
+                        isPassword = true,
+                        isError = isErrorPasswordCurrent,
+                        errorMessage = passwordCurrentMessage
+                    )
+                    Input(
+                        value = passwordNew,
+                        onValueChange = {
+                            isErrorPasswordNew = false
+                            passwordNew = it
+                        },
+                        isPassword = true,
+                        label = "Password new",
+                        isError = isErrorPasswordNew,
+                        errorMessage = passwordNewMessage
+                    )
+                    Input(
+                        value = rePasswordNew,
+                        onValueChange = {
+                            isErrorRePasswordNew = false
+                            rePasswordNew = it
+                        },
+                        isPassword = true,
+                        label = "Re-password new",
+                        isError = isErrorRePasswordNew,
+                        errorMessage = rePasswordNewMessage
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    BtnText(
+                        onClick = {
+                            validate()
+                            if (!errorValid) {
+                                userViewModel.changePassword(
+                                    ChangePasswordRequest(
+                                        passwordCurrent = passwordCurrent,
+                                        passwordNew = passwordNew
+                                    ),
+                                    actionSuccess = {
+                                        passwordCurrent = ""
+                                        passwordNew = ""
+                                        rePasswordNew = ""
+                                        openChangePasswordModal.value = false
+                                    }
+                                )
+                            }
+                        },
+                        text = "Change",
+                        buttonColor = AppColor.primary_content
+                    )
+                }
+                Spacer(modifier = Modifier.height(50.dp))
+            }
+        }
     }
 
     @Composable

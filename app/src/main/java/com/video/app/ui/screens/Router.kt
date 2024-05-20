@@ -1,55 +1,71 @@
 package com.video.app.ui.screens
 
+import com.video.app.api.models.VideoModel
 import com.video.app.states.objects.AppInitializerState
 import com.video.app.states.objects.NavigationState
 import kotlinx.serialization.Serializable
-fun Navigate(router:Router){
+
+fun Navigate(router: Router) {
     if (router is Router.HomeScreen) NavigationState.navSelected = 1
     else if (router is Router.SettingScreen) NavigationState.navSelected = 2
     else if (router is Router.MyProfileScreen) NavigationState.navSelected = 0
     AppInitializerState.navController.navigate(router)
 }
-sealed class Router{
+
+sealed class Router {
     @Serializable
-    data object HomeScreen:Router()
+    data object HomeScreen : Router()
+
     @Serializable
-    data object SettingScreen:Router()
+    data object SettingScreen : Router()
+
     @Serializable
-    data object LoginScreen:Router()
+    data object LoginScreen : Router()
+
     @Serializable
-    data object RegisterScreen:Router()
+    data object RegisterScreen : Router()
+
     @Serializable
-    data object MyProfileScreen:Router()
+    data object MyProfileScreen : Router()
 
     @Serializable
     data class UserProfileScreen(
-        val userId:Long
-    ):Router()
+        val userId: Long
+    ) : Router()
+
     @Serializable
-    data object SearchScreen:Router()
+    data object SearchScreen : Router()
+
     @Serializable
-    data object ReportScreen:Router()
+    data object ReportScreen : Router()
+
     @Serializable
     data class OTPScreen(
-        val email:String,
-        val token:String
-    ):Router()
+        val email: String,
+        val token: String
+    ) : Router()
+
     @Serializable
-    data object VIPRegisterScreen:Router()
+    data object VIPRegisterScreen : Router()
 
     @Serializable
     data class VideoPlayerScreen(
-        val index:Int,
-        val videoAt:String,
-        val uploaderId:Long
-    ):Router()
+        val index: Int,
+        val videoAt: String,
+        val uploaderId: Long,
+        val playlistAt: String
+    ) : Router()
+
     @Serializable
     data class PlaylistVideoScreen(
-        val playlistId:Long,
-        val playlistIndex:Int
-    ):Router()
+        val playlistAt: String,
+        val playlistId: Long,
+        val playlistIndex: Int,
+    ) : Router()
+
     @Serializable
-    data object UpdateAvatarScreen:Router()
+    data object UpdateAvatarScreen : Router()
+
     @Serializable
-    data object MyVideoScreen:Router()
+    data object MyVideoScreen : Router()
 }

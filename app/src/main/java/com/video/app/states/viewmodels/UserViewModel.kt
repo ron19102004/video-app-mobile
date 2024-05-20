@@ -15,6 +15,7 @@ import androidx.lifecycle.viewModelScope
 import com.video.app.api.ResponseLayout
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
+import com.video.app.api.models.ChangePasswordRequest
 import com.video.app.api.models.InfoConfirmedLoggedInResponse
 import com.video.app.api.models.InfoUserResponse
 import com.video.app.api.models.LoginRequest
@@ -69,8 +70,12 @@ class UserViewModel : ViewModel() {
     var isFetchingInfoUserConfirmed = mutableStateOf(false)
     var isSubscribing = mutableStateOf(false);
 
+    private lateinit var toast: (String) -> Unit
 
     fun init(context: Context) {
+        toast = {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
         this.context = context;
         sharedPreferences =
             context.getSharedPreferences(SharedPreferencesAuthKey.ROOT, Context.MODE_PRIVATE)
@@ -89,10 +94,43 @@ class UserViewModel : ViewModel() {
             .apply()
     }
 
-    fun updateAvatar(uri: Uri, action: () -> Unit = {}) {
-        val toast: (String) -> Unit = {
-            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+    fun changePassword(
+        data: ChangePasswordRequest,
+        action: () -> Unit = {},
+        actionSuccess: () -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                userRepository.changePassword(data)!!
+                    .enqueue(object : Callback<ResponseLayout<Any>> {
+                        override fun onResponse(
+                            call: Call<ResponseLayout<Any>>,
+                            response: Response<ResponseLayout<Any>>
+                        ) {
+                            if (response.isSuccessful) {
+                                val res: ResponseLayout<Any>? = response.body()
+                                if (res?.status == true) {
+                                    toast("Change password successfully !!!")
+                                    actionSuccess()
+                                }
+                            }
+                            action()
+                        }
+
+                        override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
+                            toast("Change password failed !!!")
+                            action()
+                        }
+                    })
+            } catch (e: Exception) {
+                e.printStackTrace()
+                toast("Change password failed !!!")
+                action()
+            }
         }
+    }
+
+    fun updateAvatar(uri: Uri, action: () -> Unit = {}) {
         viewModelScope.launch {
             try {
                 val file = getFileFromUri(context, uri)
@@ -125,7 +163,7 @@ class UserViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 toast("Error")
-                Log.e("error-update-img",e.message.toString())
+                Log.e("error-update-img", e.message.toString())
                 action()
             }
         }
@@ -144,12 +182,7 @@ class UserViewModel : ViewModel() {
                             if (res?.status == true) {
                                 isSubscribing.value = false
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Subscribe has an error !!!",
-                                    Toast.LENGTH_LONG
-                                )
-                                    .show()
+                                toast("Subscribe has an error !!!")
                             }
                         }
                         action()
@@ -157,19 +190,13 @@ class UserViewModel : ViewModel() {
 
                     override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
                         t.printStackTrace()
-                        Toast.makeText(
-                            context,
-                            "Subscribe has an error !!!",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
+                        toast("Subscribe has an error !!!")
                         action()
                     }
                 })
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
-                    .show()
+                toast("Subscribe has an error !!!")
                 action()
             }
         }
@@ -188,12 +215,7 @@ class UserViewModel : ViewModel() {
                             if (res?.status == true) {
                                 isSubscribing.value = true
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Subscribe has an error !!!",
-                                    Toast.LENGTH_LONG
-                                )
-                                    .show()
+                                toast("Subscribe has an error !!!")
                             }
                         }
                         action()
@@ -202,12 +224,7 @@ class UserViewModel : ViewModel() {
                     override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
                         action()
                         t.printStackTrace()
-                        Toast.makeText(
-                            context,
-                            "Subscribe has an error !!!",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
+                        toast("Subscribe has an error !!!")
                     }
                 })
             } catch (e: Exception) {
@@ -315,8 +332,7 @@ class UserViewModel : ViewModel() {
                             t: Throwable
                         ) {
                             Log.e("loadUserFormToken-error", t.message.toString())
-                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                                .show()
+                            toast("Subscribe has an error !!!")
                             action()
                         }
 
@@ -344,10 +360,12 @@ class UserViewModel : ViewModel() {
                                     val token: String = res?.data?.token.toString();
                                     tfa = res?.data?.tfa == true
                                     if (tfa) {
-                                        Navigate(Router.OTPScreen(
-                                            user?.username.toString(),
-                                            token
-                                        ))
+                                        Navigate(
+                                            Router.OTPScreen(
+                                                user?.username.toString(),
+                                                token
+                                            )
+                                        )
                                     } else {
                                         userCurrent.value = user
                                         vip.value = res?.data?.vip
@@ -372,8 +390,7 @@ class UserViewModel : ViewModel() {
                             t: Throwable
                         ) {
                             Log.e("login-error", t.toString())
-                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                                .show()
+                            toast("Subscribe has an error !!!")
                             activeButton()
                         }
                     }
@@ -408,12 +425,7 @@ class UserViewModel : ViewModel() {
                                     Navigate(Router.HomeScreen)
                                 }
                             }
-                            Toast.makeText(
-                                context,
-                                response.body()?.message ?: "Error",
-                                Toast.LENGTH_LONG
-                            )
-                                .show()
+                            toast(response.body()?.message ?: "Error")
                             activeButton()
                             Log.e("verify-otp", response.toString())
                         }
@@ -422,8 +434,7 @@ class UserViewModel : ViewModel() {
                             call: Call<ResponseLayout<LoginResponse?>>,
                             t: Throwable
                         ) {
-                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                                .show()
+                            toast("An error has occurred!")
                             activeButton()
                             Log.e("verify-otp-error", t.toString())
                         }
@@ -462,8 +473,7 @@ class UserViewModel : ViewModel() {
                         }
 
                         override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
-                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                                .show()
+                            toast("An error has occurred!")
                             activeButton()
                         }
                     })
@@ -503,14 +513,12 @@ class UserViewModel : ViewModel() {
                                 )
                             }
                             Navigate(Router.HomeScreen)
-                        } else Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                            .show()
+                        } else toast("An error has occurred!")
                         activeButtonSubmit()
                     }
 
                     override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
-                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                            .show()
+                        toast("An error has occurred!")
                         activeButtonSubmit()
                     }
                 })
@@ -544,8 +552,7 @@ class UserViewModel : ViewModel() {
                     }
 
                     override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
-                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                            .show()
+                        toast("An error has occurred!")
                         activeButton()
                     }
                 })
@@ -580,8 +587,7 @@ class UserViewModel : ViewModel() {
                     }
 
                     override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
-                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                            .show()
+                        toast("An error has occurred!")
                         activeButtonSubmit()
                         Log.e("send-otp-error", t.toString())
                     }
@@ -621,8 +627,7 @@ class UserViewModel : ViewModel() {
                         }
 
                         override fun onFailure(call: Call<ResponseLayout<VIP?>>, t: Throwable) {
-                            Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                                .show()
+                            toast("An error has occurred!")
                             activeButton()
                         }
                     })
@@ -655,8 +660,7 @@ class UserViewModel : ViewModel() {
                     }
 
                     override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
-                        Toast.makeText(context, "An error has occurred!", Toast.LENGTH_LONG)
-                            .show()
+                        toast("An error has occurred!")
                     }
                 })
             } catch (e: Exception) {

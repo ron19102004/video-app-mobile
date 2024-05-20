@@ -50,6 +50,7 @@ import com.video.app.ui.screens.UserProfileScreen
 
 class MainActivity : ComponentActivity() {
     private var initialized = mutableStateOf(false)
+
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +68,8 @@ class MainActivity : ComponentActivity() {
                 initialized.value = true
             }
             NavHost(
-                navController = AppInitializerState.navController, startDestination = Router.HomeScreen
+                navController = AppInitializerState.navController,
+                startDestination = Router.HomeScreen
             ) {
                 composable<Router.HomeScreen> {
                     HomeScreen().Screen();
@@ -89,7 +91,7 @@ class MainActivity : ComponentActivity() {
                     SettingScreen().Screen()
                 }
                 composable<Router.MyProfileScreen> {
-                    MyProfileScreen().Screen( )
+                    MyProfileScreen().Screen()
                 }
                 composable<Router.SearchScreen> {
                     SearchScreen().Screen(
@@ -105,7 +107,8 @@ class MainActivity : ComponentActivity() {
                     val args = it.toRoute<Router.PlaylistVideoScreen>()
                     PlaylistVideoScreen().Screen(
                         playlistId = args.playlistId,
-                        playlistIndex = args.playlistIndex
+                        playlistIndex = args.playlistIndex,
+                        playlistAt = args.playlistAt,
                     )
                 }
                 composable<Router.OTPScreen> {
@@ -115,18 +118,19 @@ class MainActivity : ComponentActivity() {
                         token = args.token
                     )
                 }
-                composable<Router.UserProfileScreen>{
+                composable<Router.UserProfileScreen> {
                     val args = it.toRoute<Router.UserProfileScreen>()
                     UserProfileScreen().Screen(
                         userId = args.userId,
                     )
                 }
-                composable<Router.VideoPlayerScreen>{
+                composable<Router.VideoPlayerScreen> {
                     val args = it.toRoute<Router.VideoPlayerScreen>()
                     VideoPlayerScreen().Screen(
                         indexVideo = args.index,
                         videoAt = args.videoAt,
-                        uploaderId = args.uploaderId
+                        uploaderId = args.uploaderId,
+                        playlistAt = args.playlistAt
                     )
                 }
             }

@@ -22,7 +22,9 @@ object URL {
     private const val ROOT_SP = "url_root";
     private const val PATH_URL_API: String = "path_url_api";
     private const val PATH_URL_DEFAULT: String =
-        "https://hairsalondanangtss.io.vn/"
+        "https://aca6-2001-ee0-4b43-e1b0-b8a1-a0d0-594f-454d.ngrok-free.app"
+
+    //        "https://hairsalondanangtss.io.vn/"
     var path by mutableStateOf(PATH_URL_DEFAULT)
 
     fun init(context: Context) {
@@ -73,6 +75,7 @@ object RetrofitAPI {
             "/users/vip/register",
             "/users/vip/cancel",
             "/users/image",
+            "/users/change-password",
             "/playlists/my",
             "/playlists/new",
             "/playlists/videos",
@@ -82,7 +85,7 @@ object RetrofitAPI {
             "/users/loggedIn/info-confirmed",
             "/users/unsubscribe",
             "/users/subscribe",
-            "/videos/my-video"-> true
+            "/videos/my-videos" -> true
 
             else -> false
         }
@@ -100,11 +103,6 @@ object RetrofitAPI {
             .build()
     }
 }
-
-data class ApiResponse<T>(
-    val data: T? = null,
-    val error: String? = "Error"
-)
 
 data class ResponseLayout<DTO>(
     val message: String,

@@ -95,7 +95,7 @@ class MyProfileScreen {
     @Composable
     fun Screen(
         userViewModel: UserViewModel = AppInitializerState.userViewModel,
-        videoAndPlaylistViewModel: VideoAndPlaylistViewModel=AppInitializerState.videoAndPlaylistViewModel
+        videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel
     ) {
         this.userViewModel = userViewModel
         this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
@@ -479,10 +479,13 @@ class MyProfileScreen {
                                 index = it,
                                 playlistModel = playlist,
                                 onClick = { playlistId, playlistIndex ->
-                                    Navigate(Router.PlaylistVideoScreen(
-                                        playlistId = playlistId,
-                                        playlistIndex = playlistIndex
-                                    ))
+                                    Navigate(
+                                        Router.PlaylistVideoScreen(
+                                            playlistId = playlistId,
+                                            playlistIndex = playlistIndex,
+                                            playlistAt = PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN,
+                                        )
+                                    )
                                 }, onLongClick = {
                                     idPlaylistSelectedToDelete.value = it
                                     openOptionOnLongLickPlaylist.value = true

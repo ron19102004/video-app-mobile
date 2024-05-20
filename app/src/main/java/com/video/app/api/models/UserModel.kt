@@ -60,3 +60,7 @@ data class InfoConfirmedLoggedInResponse(
     var user: UserModel? = null,
     var isSubscribing: Boolean? = false
 )
+data class ChangePasswordRequest(
+    val passwordCurrent:String,
+    val passwordNew:String
+)

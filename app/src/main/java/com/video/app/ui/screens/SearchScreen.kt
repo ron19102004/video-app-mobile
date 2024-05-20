@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,9 +53,11 @@ import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.components.VideoCardRow
 import com.video.app.ui.theme.AppColor
+import kotlinx.coroutines.launch
 
 class SearchScreen {
     private lateinit var userViewModel: UserViewModel;
+    private var isLoadingSearchVideo = mutableStateOf(false)
 
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -64,9 +67,9 @@ class SearchScreen {
         videoAndPlaylistViewModel: VideoAndPlaylistViewModel = AppInitializerState.videoAndPlaylistViewModel
     ) {
         this.userViewModel = userViewModel
-
+        val scope = rememberCoroutineScope()
         SearchBar(
-            enabled = !videoAndPlaylistViewModel.isLoadingSearchVideo.value,
+            enabled = !isLoadingSearchVideo.value,
             colors = SearchBarDefaults.colors(
                 containerColor = AppColor.background,
                 inputFieldColors = TextFieldDefaults.colors(
@@ -77,15 +80,21 @@ class SearchScreen {
             query = videoAndPlaylistViewModel.queryOnSearchScreen.value,
             onQueryChange = { videoAndPlaylistViewModel.queryOnSearchScreen.value = it },
             onSearch = {
-                videoAndPlaylistViewModel.searchVideosByName(videoAndPlaylistViewModel.queryOnSearchScreen.value)
+                scope.launch {
+                    isLoadingSearchVideo.value = true
+                    videoAndPlaylistViewModel.searchVideosByName(videoAndPlaylistViewModel.queryOnSearchScreen.value) {
+                        isLoadingSearchVideo.value = false
+                    }
+                }
             },
             active = true,
             onActiveChange = {
+
             },
             placeholder = { Text(text = "Search...", color = AppColor.second_text) },
             trailingIcon = {
                 IconButton(
-                    enabled = !videoAndPlaylistViewModel.isLoadingSearchVideo.value,
+                    enabled = !isLoadingSearchVideo.value,
                     onClick = {
                         videoAndPlaylistViewModel.searchVideosByName(videoAndPlaylistViewModel.queryOnSearchScreen.value)
                     }) {
@@ -106,7 +115,7 @@ class SearchScreen {
                 }
             }
         ) {
-            if (videoAndPlaylistViewModel.isLoadingSearchVideo.value) {
+            if (isLoadingSearchVideo.value) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -139,7 +148,8 @@ class SearchScreen {
                                                     Router.VideoPlayerScreen(
                                                         index,
                                                         VideoPlayerScreen.VideoAt.SEARCH_SCREEN,
-                                                        uploaderId
+                                                        uploaderId,
+                                                        PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN
                                                     )
                                                 )
                                             }
