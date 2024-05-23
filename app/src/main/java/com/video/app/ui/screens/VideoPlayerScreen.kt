@@ -150,7 +150,6 @@ class VideoPlayerScreen {
                 VideoAt.HOME_SCREEN -> {
                     videoAndPlaylistViewModel.videosOnHomeScreen.value?.get(indexVideo)!!
                 }
-
                 VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE -> {
                     videoAndPlaylistViewModel.videosWithUploaderId.value?.get(indexVideo)!!
                 }

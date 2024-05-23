@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,6 +32,7 @@ class VideoAndPlaylistViewModel : ViewModel() {
 
     //for home screen
     var videosOnHomeScreen = MutableLiveData<List<VideoModel>?>(emptyList())
+    var pageHomeCurrent = mutableIntStateOf(0)
 
     //for video player screen and user profile screen
     var videosWithUploaderId = MutableLiveData<List<VideoModel>?>(emptyList())
@@ -107,7 +109,7 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             if (response.isSuccessful) {
                                 val res: ResponseLayout<List<VideoModel>>? = response.body()
                                 if (res?.status == true) {
-                                    myVideos.value = res?.data
+                                    myVideos.value = res.data
                                 }
                             } else Toast.makeText(
                                 context,
@@ -231,13 +233,9 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             if (response.isSuccessful) {
                                 val res: ResponseLayout<List<VideoModel>>? = response.body()
                                 if (res?.status == true) {
-                                    videosOnHomeScreen.value = res?.data
+                                    videosOnHomeScreen.value = res.data
                                 }
                             }
-                            Log.e(
-                                "data-videos-with-category-id",
-                                videosOnHomeScreen.value.toString()
-                            )
                             action()
                         }
 
@@ -273,7 +271,7 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             if (response.isSuccessful) {
                                 val res: ResponseLayout<List<VideoModel>>? = response.body()
                                 if (res?.status == true) {
-                                    videosWithUploaderId.value = res?.data
+                                    videosWithUploaderId.value = res.data
                                 }
                             } else {
                                 isErrorFetchVideoWithUploaderId.value = true

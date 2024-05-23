@@ -101,10 +101,7 @@ class HomeScreen {
             mutableStateOf(false)
         }
         val scope = rememberCoroutineScope()
-        var pageCurrent by remember {
-            mutableIntStateOf(0)
-        }
-        videoAndPlaylistViewModel.fetchVideosHome()
+        videoAndPlaylistViewModel.fetchVideosHome(page = videoAndPlaylistViewModel.pageHomeCurrent.intValue)
         val videos =
             videoAndPlaylistViewModel.videosOnHomeScreen.asFlow().collectAsState(
                 initial = emptyList()
@@ -150,7 +147,7 @@ class HomeScreen {
                                         categoryId = btnTagSelected.intValue.toLong(),
                                         action = { isRefreshingHome = false })
                             }
-                            pageCurrent = 0
+                            videoAndPlaylistViewModel.pageHomeCurrent.intValue = 0
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
@@ -167,7 +164,6 @@ class HomeScreen {
                                                     index = idx,
                                                     videoAt = VideoPlayerScreen.VideoAt.HOME_SCREEN,
                                                     uploaderId = it,
-                                                    PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN
                                                 )
                                             )
                                         }
@@ -182,16 +178,16 @@ class HomeScreen {
                             }
                             BtnText(onClick = {
                                 scope.launch {
-                                    pageCurrent++
+                                    videoAndPlaylistViewModel.pageHomeCurrent.intValue++
                                     delay(1000L)
                                     if (btnTagSelected.intValue == -1) {
-                                        videoAndPlaylistViewModel.fetchVideosHome(page = pageCurrent)
+                                        videoAndPlaylistViewModel.fetchVideosHome(page = videoAndPlaylistViewModel.pageHomeCurrent.intValue)
                                     } else {
                                         videoAndPlaylistViewModel
                                             .fetchVideosHomeWithCategoryId(
                                                 categoryId = btnTagSelected.intValue.toLong(),
                                                 action = { },
-                                                page = pageCurrent
+                                                page = videoAndPlaylistViewModel.pageHomeCurrent.intValue
                                             )
                                     }
                                 }
