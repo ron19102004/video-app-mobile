@@ -80,5 +80,4 @@ interface VideoAndPlaylistRepository {
     @Headers("Content-Type: application/json")
     @GET("videos/my-videos")
     fun getAllMyVideo(): Call<ResponseLayout<List<VideoModel>>>
-
 }

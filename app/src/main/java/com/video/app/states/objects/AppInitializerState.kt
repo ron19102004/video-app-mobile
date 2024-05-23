@@ -1,5 +1,6 @@
 package com.video.app.states.objects
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -8,17 +9,19 @@ import androidx.navigation.compose.rememberNavController
 import com.video.app.api.RetrofitAPI
 import com.video.app.api.URL
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
+import com.video.app.states.viewmodels.CommentAndReportViewModel
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
-
+@SuppressLint("StaticFieldLeak")
 object AppInitializerState {
     lateinit var navController: NavHostController
     lateinit var userViewModel: UserViewModel
     lateinit var categoryAndCountryViewModel: CategoryAndCountryViewModel
     lateinit var videoAndPlaylistViewModel: VideoAndPlaylistViewModel
+    lateinit var commentAndReportViewModel: CommentAndReportViewModel
 
     @Composable
-    fun init(context: Context) {
+    fun Init(context: Context) {
         URL.init(context)
         RetrofitAPI.init(context)
         UiState.init(context)
@@ -31,6 +34,9 @@ object AppInitializerState {
 
         videoAndPlaylistViewModel = viewModel()
         videoAndPlaylistViewModel.init(context, userViewModel)
+
+        commentAndReportViewModel = viewModel()
+        commentAndReportViewModel.init(context)
 
         navController = rememberNavController()
     }

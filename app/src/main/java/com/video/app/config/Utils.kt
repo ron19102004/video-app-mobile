@@ -3,9 +3,14 @@ package com.video.app.config
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 object ValidRegex {
     private val emailPattern = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
@@ -34,4 +39,9 @@ fun getFileFromUri(context: Context, uri: Uri): File? {
         e.printStackTrace()
         return null
     }
+}
+@RequiresApi(Build.VERSION_CODES.O)
+fun convertStringToLocalDate(dateString: String): LocalDate {
+    val offsetDateTime = OffsetDateTime.parse(dateString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    return offsetDateTime.toLocalDate()
 }

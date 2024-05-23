@@ -128,7 +128,7 @@ class PlaylistVideoScreen {
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = {
+                    IconButton( onClick = {
                         AppInitializerState.navController.popBackStack()
                     }) {
                         Icon(

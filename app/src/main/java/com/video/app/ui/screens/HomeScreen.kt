@@ -134,20 +134,20 @@ class HomeScreen {
                         userViewModel.viewModelScope.launch {
                             isRefreshingHome = true
                             delay(1000L)
-                            if (btnTagSelected.value == -1)
+                            if (btnTagSelected.intValue == -1)
                                 videoAndPlaylistViewModel.fetchVideosHome {
                                     isRefreshingHome = false
                                 }
                             else videoAndPlaylistViewModel
                                 .fetchVideosHomeWithCategoryId(
-                                    categoryId = btnTagSelected.value.toLong(),
+                                    categoryId = btnTagSelected.intValue.toLong(),
                                     action = { isRefreshingHome = false })
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
                     contentFix = {
-                        if (videos?.value?.isNullOrEmpty() == false) {
-                            videos?.value?.forEachIndexed { index, video ->
+                        if (!videos.value.isNullOrEmpty()) {
+                            videos.value!!.forEachIndexed { index, video ->
                                 VideoCard(
                                     index = index,
                                     videoModel = video,
@@ -232,43 +232,41 @@ class HomeScreen {
     private fun CategoriesTagContainer() {
         val categories =
             categoryAndCountryViewModel.categories.asFlow().collectAsState(initial = emptyList())
-        if (categories != null) {
-            val Tag: @Composable (index: Int, text: String, onClick: () -> Unit) -> Unit =
-                { index, text, onClick ->
-                    ElevatedButton(
-                        onClick = onClick,
-                        modifier = Modifier,
-                        shape = CircleShape,
-                        colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = if (btnTagSelected.value == index) AppColor.background_container
-                            else Color.Transparent
+        val Tag: @Composable (index: Int, text: String, onClick: () -> Unit) -> Unit =
+            { index, text, onClick ->
+                ElevatedButton(
+                    onClick = onClick,
+                    modifier = Modifier,
+                    shape = CircleShape,
+                    colors = ButtonDefaults.elevatedButtonColors(
+                        containerColor = if (btnTagSelected.value == index) AppColor.background_container
+                        else Color.Transparent
+                    )
+                ) {
+                    Text(
+                        text = text, style = TextStyle(
+                            color = AppColor.primary_text,
+                            fontWeight = FontWeight.SemiBold,
                         )
-                    ) {
-                        Text(
-                            text = text, style = TextStyle(
-                                color = AppColor.primary_text,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(5.dp))
+                    )
                 }
-            LazyRow {
-                item {
-                    Tag(-1, "All") {
-                        btnTagSelected.value = -1
+                Spacer(modifier = Modifier.width(5.dp))
+            }
+        LazyRow {
+            item {
+                Tag(-1, "All") {
+                    btnTagSelected.value = -1
+                    videoAndPlaylistViewModel
+                        .fetchVideosHome()
+                }
+                Spacer(modifier = Modifier.width(5.dp))
+            }
+            categories.value?.let { list ->
+                items(list.size) { it ->
+                    Tag(it, categories.value!![it].name) {
+                        btnTagSelected.value = it
                         videoAndPlaylistViewModel
-                            .fetchVideosHome()
-                    }
-                    Spacer(modifier = Modifier.width(5.dp))
-                }
-                categories.value?.let { list ->
-                    items(list.size) { it ->
-                        Tag(it, categories.value!![it].name) {
-                            btnTagSelected.value = it
-                            videoAndPlaylistViewModel
-                                .fetchVideosHomeWithCategoryId(categoryId = categories.value!![it].id)
-                        }
+                            .fetchVideosHomeWithCategoryId(categoryId = categories.value!![it].id)
                     }
                 }
             }

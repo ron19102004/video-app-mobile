@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -40,16 +41,19 @@ import com.video.app.api.models.ReportModel
 import com.video.app.config.CONSTANT
 import com.video.app.config.ValidRegex
 import com.video.app.states.objects.AppInitializerState
+import com.video.app.states.viewmodels.CommentAndReportViewModel
 import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.components.Input
-import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.ui.theme.AppColor
 
 class ReportScreen {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
-    fun Screen(userViewModel: UserViewModel= AppInitializerState.userViewModel) {
+    fun Screen(
+        commentAndReportViewModel: CommentAndReportViewModel = AppInitializerState.commentAndReportViewModel
+    ) {
+        val context = LocalContext.current
         var email by remember {
             mutableStateOf("")
         }
@@ -85,7 +89,11 @@ class ReportScreen {
                     IconButton(onClick = {
                         AppInitializerState.navController.popBackStack()
                     }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = AppColor.primary_text)
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            tint = AppColor.primary_text
+                        )
                     }
                 }
             }
@@ -143,12 +151,12 @@ class ReportScreen {
                                 )
                             ) {
                                 Toast.makeText(
-                                    userViewModel.context,
+                                    context,
                                     "Reporting...",
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 enabledButtonSubmit = false
-                                userViewModel.report(
+                                commentAndReportViewModel.report(
                                     ReportModel(email, content),
                                     activeButtonSubmit
                                 )
@@ -175,7 +183,7 @@ class ReportScreen {
                         onClick = {
                             val uri = Uri.parse(CONSTANT.APP.FACEBOOK_ADMIN_URL)
                             val intent = Intent(Intent.ACTION_VIEW, uri)
-                            userViewModel.context.startActivity(intent)
+                            context.startActivity(intent)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {

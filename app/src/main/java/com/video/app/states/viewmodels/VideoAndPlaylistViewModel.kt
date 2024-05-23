@@ -1,5 +1,6 @@
 package com.video.app.states.viewmodels
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-
+@SuppressLint("StaticFieldLeak")
 class VideoAndPlaylistViewModel : ViewModel() {
     private val videoAndPlaylistRepository by lazy {
         RetrofitAPI.service(URL.path).create(VideoAndPlaylistRepository::class.java)

@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
@@ -18,13 +19,15 @@ fun Heading(
     color: Color = AppColor.primary_text,
     fontWeight: FontWeight = FontWeight.Bold,
     modifier: Modifier = Modifier,
-    maxLines:Int = 4
+    maxLines:Int = 4,
+    fontStyle: FontStyle = FontStyle.Normal
 ) {
     Text(
         text = text, style = TextStyle(
             fontWeight = fontWeight,
             fontSize = size,
-            color = color
+            color = color,
+            fontStyle = fontStyle
         ),
         modifier = modifier,
         maxLines = maxLines,

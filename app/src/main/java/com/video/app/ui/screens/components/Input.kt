@@ -21,7 +21,7 @@ import com.video.app.ui.theme.AppColor
 
 @Composable
 fun Input(
-    modifier: Modifier = Modifier, value: String,
+    value: String,
     onValueChange: (String) -> Unit,
     shape: RoundedCornerShape? = null,
     placeholder: String? = null,
@@ -34,14 +34,15 @@ fun Input(
     singleLine: Boolean = true,
     textStyle: TextStyle = TextStyle(
         color = AppColor.primary_text
-    )
+    ),
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .height(height ?: CONSTANT.UI.HEIGHT_INPUT)
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(height ?: CONSTANT.UI.HEIGHT_INPUT),
+        modifier = modifier,
         shape = shape ?: RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON),
         placeholder = { Text(text = placeholder ?: "", color = Color.DarkGray) },
         textStyle = textStyle,

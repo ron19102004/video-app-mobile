@@ -53,7 +53,7 @@ sealed class Router {
         val index: Int,
         val videoAt: String,
         val uploaderId: Long,
-        val playlistAt: String
+        val playlistAt: String? = null
     ) : Router()
 
     @Serializable

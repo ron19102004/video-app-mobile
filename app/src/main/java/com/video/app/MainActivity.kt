@@ -2,9 +2,11 @@ package com.video.app
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -51,6 +53,7 @@ import com.video.app.ui.screens.UserProfileScreen
 class MainActivity : ComponentActivity() {
     private var initialized = mutableStateOf(false)
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +67,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             if (!initialized.value) {
-                AppInitializerState.init(this)
+                AppInitializerState.Init(this)
                 initialized.value = true
             }
             NavHost(

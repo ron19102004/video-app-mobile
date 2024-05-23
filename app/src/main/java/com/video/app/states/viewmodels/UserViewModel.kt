@@ -21,17 +21,13 @@ import com.video.app.api.models.InfoUserResponse
 import com.video.app.api.models.LoginRequest
 import com.video.app.api.models.LoginResponse
 import com.video.app.api.models.RegisterRequest
-import com.video.app.api.models.ReportModel
 import com.video.app.api.models.UserModel
 import com.video.app.api.models.VIP
 import com.video.app.api.models.VerifyOTPRequest
-import com.video.app.api.repositories.ReportRepository
 import com.video.app.api.repositories.UserRepository
 import com.video.app.config.getFileFromUri
-import com.video.app.services.NotificationService
 import com.video.app.ui.screens.Navigate
 import com.video.app.ui.screens.Router
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -39,7 +35,6 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
 
 object SharedPreferencesAuthKey {
     const val ROOT = "auth"
@@ -47,16 +42,11 @@ object SharedPreferencesAuthKey {
     const val IS_LOGGED_IN = "isLoggedIn"
     const val TFA = "two-factor-authentication"
 }
-
+@SuppressLint("StaticFieldLeak")
 class UserViewModel : ViewModel() {
     private val userRepository by lazy {
         RetrofitAPI.service(URL.path).create(UserRepository::class.java)
     }
-    private val reportRepository by lazy {
-        RetrofitAPI.service(URL.path).create(ReportRepository::class.java)
-    }
-
-    @SuppressLint("StaticFieldLeak")
     lateinit var context: Context;
     private lateinit var sharedPreferences: SharedPreferences;
     val userCurrent = MutableLiveData<UserModel?>(null);
@@ -493,42 +483,6 @@ class UserViewModel : ViewModel() {
         saveSharedPreferences()
         Toast.makeText(context, "Logged out!", Toast.LENGTH_LONG).show()
         Navigate(Router.HomeScreen)
-    }
-
-    fun report(report: ReportModel, activeButtonSubmit: () -> Unit) {
-        viewModelScope.launch {
-            try {
-                reportRepository.create(report)!!.enqueue(object : Callback<ResponseLayout<Any>> {
-                    override fun onResponse(
-                        call: Call<ResponseLayout<Any>>,
-                        response: Response<ResponseLayout<Any>>
-                    ) {
-                        if (response.isSuccessful) {
-                            val res: ResponseLayout<Any>? = response.body()
-                            res?.message?.let {
-                                NotificationService.ShowMessage.show(
-                                    context,
-                                    "Report notification",
-                                    it
-                                )
-                            }
-                            Navigate(Router.HomeScreen)
-                        } else toast("An error has occurred!")
-                        activeButtonSubmit()
-                    }
-
-                    override fun onFailure(call: Call<ResponseLayout<Any>>, t: Throwable) {
-                        toast("An error has occurred!")
-                        activeButtonSubmit()
-                    }
-                })
-            } catch (e: Exception) {
-                e.printStackTrace()
-                activeButtonSubmit()
-                Toast.makeText(context, e.message, Toast.LENGTH_LONG)
-                    .show()
-            }
-        }
     }
 
     fun changeTFA(value: Boolean, activeButton: () -> Unit = {}) {
