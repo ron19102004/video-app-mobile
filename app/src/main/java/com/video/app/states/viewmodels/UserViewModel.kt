@@ -14,7 +14,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.video.app.api.ResponseLayout
 import com.video.app.api.RetrofitAPI
-import com.video.app.api.URL
 import com.video.app.api.models.ChangePasswordRequest
 import com.video.app.api.models.InfoConfirmedLoggedInResponse
 import com.video.app.api.models.InfoUserResponse
@@ -25,6 +24,7 @@ import com.video.app.api.models.UserModel
 import com.video.app.api.models.VIP
 import com.video.app.api.models.VerifyOTPRequest
 import com.video.app.api.repositories.UserRepository
+import com.video.app.config.CONSTANT
 import com.video.app.config.getFileFromUri
 import com.video.app.ui.screens.Navigate
 import com.video.app.ui.screens.Router
@@ -45,7 +45,7 @@ object SharedPreferencesAuthKey {
 @SuppressLint("StaticFieldLeak")
 class UserViewModel : ViewModel() {
     private val userRepository by lazy {
-        RetrofitAPI.service(URL.path).create(UserRepository::class.java)
+        RetrofitAPI.service(CONSTANT.URL.PATH_URL_DEFAULT).create(UserRepository::class.java)
     }
     lateinit var context: Context;
     private lateinit var sharedPreferences: SharedPreferences;

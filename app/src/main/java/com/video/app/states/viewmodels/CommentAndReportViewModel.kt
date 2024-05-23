@@ -9,11 +9,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.video.app.api.ResponseLayout
 import com.video.app.api.RetrofitAPI
-import com.video.app.api.URL
 import com.video.app.api.models.CommentModel
 import com.video.app.api.models.CreateCommentDto
 import com.video.app.api.models.ReportModel
 import com.video.app.api.repositories.ReportAndCommentRepository
+import com.video.app.config.CONSTANT
 import com.video.app.services.NotificationService
 import com.video.app.ui.screens.Navigate
 import com.video.app.ui.screens.Router
@@ -26,7 +26,7 @@ import retrofit2.Response
 @SuppressLint("StaticFieldLeak")
 class CommentAndReportViewModel : ViewModel() {
     private val reportAndCommentRepository by lazy {
-        RetrofitAPI.service(URL.path).create(ReportAndCommentRepository::class.java)
+        RetrofitAPI.service(CONSTANT.URL.PATH_URL_DEFAULT).create(ReportAndCommentRepository::class.java)
     }
     lateinit var context: Context;
     private lateinit var toast: (String) -> Unit

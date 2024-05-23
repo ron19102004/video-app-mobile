@@ -4,7 +4,7 @@ class CategoryModel(
     val id: Long,
     val name: String,
     val slug: String,
-    val image: String,
+    val image: String?=null,
 )
 
 class CountryModel(

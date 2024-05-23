@@ -6,6 +6,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 sealed class CONSTANT {
+    object URL {
+         const val PATH_URL_DEFAULT: String = "https://hairsalondanangtss.io.vn/"
+    }
     object UI {
         val ROUNDED_INPUT_BUTTON: Dp = 10.dp
 
@@ -21,7 +24,8 @@ sealed class CONSTANT {
             val XL: TextUnit = 35.sp
         }
     }
-    object APP{
-        const val FACEBOOK_ADMIN_URL="https://www.facebook.com/ron292004?locale=vi_VN"
+
+    object APP {
+        const val FACEBOOK_ADMIN_URL = "https://www.facebook.com/ron292004?locale=vi_VN"
     }
 }

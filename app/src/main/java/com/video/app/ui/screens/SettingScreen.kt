@@ -47,7 +47,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.video.app.R
-import com.video.app.api.URL
 import com.video.app.api.models.ChangePasswordRequest
 import com.video.app.config.CONSTANT
 import com.video.app.states.objects.AppInitializerState
@@ -59,13 +58,11 @@ import com.video.app.ui.screens.layouts.MainLayout
 import com.video.app.states.objects.UiState
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.ui.theme.AppColor
-import kotlinx.coroutines.launch
 
 class SettingScreen {
     private lateinit var userViewModel: UserViewModel
     private var openChangePasswordModal = mutableStateOf(false)
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun Screen(userViewModel: UserViewModel = AppInitializerState.userViewModel) {
         this.userViewModel = userViewModel
@@ -293,44 +290,6 @@ class SettingScreen {
             }
         }
     }
-
-    @Composable
-    private fun DevTools(hideModal: () -> Unit) {
-        var urlApi by remember {
-            mutableStateOf("")
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            Input(
-                value = urlApi,
-                onValueChange = {
-                    urlApi = it
-                }, placeholder = "https://example.api.com/", label = "URL API"
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            BtnText(onClick = {
-                if (urlApi.isBlank()) {
-                    Toast.makeText(
-                        userViewModel.context,
-                        "URL must not blank",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    URL.save(urlApi)
-                    hideModal()
-                    Toast.makeText(
-                        userViewModel.context,
-                        "URL is changed! Off and on app again!",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }, text = "Change")
-        }
-    }
-
     @Composable
     private fun TextIconImage(
         text: String,

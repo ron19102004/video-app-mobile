@@ -17,35 +17,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import kotlin.system.exitProcess
 
-object URL {
-    private lateinit var sharedPreferences: SharedPreferences
-    private const val ROOT_SP = "url_root";
-    private const val PATH_URL_API: String = "path_url_api";
-    private const val PATH_URL_DEFAULT: String =
-//        "https://b69b-2402-800-629c-8141-5155-b864-4362-cb7b.ngrok-free.app/"
-        "https://hairsalondanangtss.io.vn/"
-    var path by mutableStateOf(PATH_URL_DEFAULT)
-
-    fun init(context: Context) {
-        sharedPreferences = context.getSharedPreferences(ROOT_SP, Context.MODE_PRIVATE)
-        path = sharedPreferences.getString(PATH_URL_API, PATH_URL_DEFAULT).toString()
-    }
-
-    fun save(pathNew: String) {
-        path = pathNew
-        sharedPreferences.edit()
-            .putString(PATH_URL_API, pathNew)
-            .apply()
-    }
-}
-
 @SuppressLint("StaticFieldLeak")
 object RetrofitAPI {
     private lateinit var _context: Context
     fun init(context: Context) {
         _context = context;
     }
-
     private val client = OkHttpClient.Builder()
         .addInterceptor { chain ->
             val originalRequest = chain.request()

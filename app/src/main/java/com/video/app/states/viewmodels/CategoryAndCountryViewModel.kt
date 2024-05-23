@@ -5,10 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.video.app.api.RetrofitAPI
-import com.video.app.api.URL
 import com.video.app.api.models.CategoryModel
 import com.video.app.api.models.CountryModel
 import com.video.app.api.repositories.CategoryAndCountryRepository
+import com.video.app.config.CONSTANT
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -16,7 +16,7 @@ import retrofit2.Response
 
 class CategoryAndCountryViewModel : ViewModel() {
     private val repository by lazy {
-        RetrofitAPI.service(URL.path).create(CategoryAndCountryRepository::class.java)
+        RetrofitAPI.service(CONSTANT.URL.PATH_URL_DEFAULT).create(CategoryAndCountryRepository::class.java)
     }
     var categories = MutableLiveData<List<CategoryModel>?>(emptyList())
     var countries = MutableLiveData<List<CountryModel>?>(emptyList())
@@ -28,7 +28,7 @@ class CategoryAndCountryViewModel : ViewModel() {
     private fun fetchCategoriesAndCountries() {
         viewModelScope.launch {
             try {
-                repository.findAllCategory()!!.enqueue(object : Callback<List<CategoryModel>> {
+                repository.findAllCategory().enqueue(object : Callback<List<CategoryModel>> {
                     override fun onResponse(
                         call: Call<List<CategoryModel>>,
                         response: Response<List<CategoryModel>>
@@ -44,7 +44,7 @@ class CategoryAndCountryViewModel : ViewModel() {
                         Log.e("categories-data-error", t.toString())
                     }
                 })
-                repository.findAllCountry()!!.enqueue(object : Callback<List<CountryModel>> {
+                repository.findAllCountry().enqueue(object : Callback<List<CountryModel>> {
                     override fun onResponse(
                         call: Call<List<CountryModel>>,
                         response: Response<List<CountryModel>>
@@ -62,6 +62,7 @@ class CategoryAndCountryViewModel : ViewModel() {
                 })
             } catch (e: Exception) {
                 e.printStackTrace()
+                Log.e("fetch-error", e.toString())
             }
         }
     }

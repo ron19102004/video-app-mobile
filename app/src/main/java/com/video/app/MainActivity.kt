@@ -27,7 +27,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.video.app.api.RetrofitAPI
-import com.video.app.api.URL
 import com.video.app.states.objects.AppInitializerState
 import com.video.app.ui.screens.HomeScreen
 import com.video.app.ui.screens.MyProfileScreen

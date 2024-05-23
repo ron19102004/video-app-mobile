@@ -4,27 +4,28 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.video.app.api.ResponseLayout
 import com.video.app.api.RetrofitAPI
-import com.video.app.api.URL
 import com.video.app.api.models.CreatePlaylistDto
 import com.video.app.api.models.PlaylistModel
 import com.video.app.api.models.VideoModel
 import com.video.app.api.repositories.VideoAndPlaylistRepository
+import com.video.app.config.CONSTANT
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
 @SuppressLint("StaticFieldLeak")
 class VideoAndPlaylistViewModel : ViewModel() {
     private val videoAndPlaylistRepository by lazy {
-        RetrofitAPI.service(URL.path).create(VideoAndPlaylistRepository::class.java)
+        RetrofitAPI.service(CONSTANT.URL.PATH_URL_DEFAULT)
+            .create(VideoAndPlaylistRepository::class.java)
     }
     private lateinit var context: Context
 
@@ -179,11 +180,11 @@ class VideoAndPlaylistViewModel : ViewModel() {
         }
     }
 
-    fun fetchVideosHome(action: () -> Unit = {}) {
+    fun fetchVideosHome(page: Int = 0,action: () -> Unit = {}) {
         viewModelScope.launch {
             delay(500L)
             try {
-                videoAndPlaylistRepository.getAllVideo(page = 0)!!
+                videoAndPlaylistRepository.getAllVideo(page = page)
                     .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
                         override fun onResponse(
                             call: Call<ResponseLayout<List<VideoModel>>>,
@@ -192,7 +193,7 @@ class VideoAndPlaylistViewModel : ViewModel() {
                             if (response.isSuccessful) {
                                 val res: ResponseLayout<List<VideoModel>>? = response.body()
                                 if (res?.status == true) {
-                                    videosOnHomeScreen.value = res?.data
+                                    videosOnHomeScreen.value = res.data
                                 }
                             }
                             Log.e("data-videos", videosOnHomeScreen.value.toString())
@@ -214,14 +215,14 @@ class VideoAndPlaylistViewModel : ViewModel() {
         }
     }
 
-    fun fetchVideosHomeWithCategoryId(action: () -> Unit = {}, categoryId: Long) {
+    fun fetchVideosHomeWithCategoryId(action: () -> Unit = {}, categoryId: Long, page: Int = 0) {
         viewModelScope.launch {
             delay(1000L)
             try {
                 videoAndPlaylistRepository.getAllVideoWithCategoryId(
-                    page = 0,
+                    page = page,
                     categoryId = categoryId
-                )!!
+                )
                     .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
                         override fun onResponse(
                             call: Call<ResponseLayout<List<VideoModel>>>,
@@ -263,7 +264,7 @@ class VideoAndPlaylistViewModel : ViewModel() {
                 videoAndPlaylistRepository.getAllVideoWithUploaderId(
                     page = 0,
                     uploaderId = uploaderId
-                )!!
+                )
                     .enqueue(object : Callback<ResponseLayout<List<VideoModel>>> {
                         override fun onResponse(
                             call: Call<ResponseLayout<List<VideoModel>>>,

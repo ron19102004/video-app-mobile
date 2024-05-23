@@ -7,7 +7,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.video.app.api.RetrofitAPI
-import com.video.app.api.URL
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.CommentAndReportViewModel
 import com.video.app.states.viewmodels.UserViewModel
@@ -22,7 +21,6 @@ object AppInitializerState {
 
     @Composable
     fun Init(context: Context) {
-        URL.init(context)
         RetrofitAPI.init(context)
         UiState.init(context)
 

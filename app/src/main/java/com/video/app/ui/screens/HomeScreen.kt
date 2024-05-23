@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +67,7 @@ import com.video.app.ui.screens.layouts.MainLayout
 import com.video.app.states.viewmodels.CategoryAndCountryViewModel
 import com.video.app.states.viewmodels.UserViewModel
 import com.video.app.states.viewmodels.VideoAndPlaylistViewModel
+import com.video.app.ui.screens.components.BtnText
 import com.video.app.ui.screens.components.Heading
 import com.video.app.ui.screens.components.ModalBottomSheetAddPlaylist
 import com.video.app.ui.screens.components.ModalBottomSheetItem
@@ -97,6 +99,10 @@ class HomeScreen {
         this.videoAndPlaylistViewModel = videoAndPlaylistViewModel
         var isRefreshingHome by remember {
             mutableStateOf(false)
+        }
+        val scope = rememberCoroutineScope()
+        var pageCurrent by remember {
+            mutableIntStateOf(0)
         }
         videoAndPlaylistViewModel.fetchVideosHome()
         val videos =
@@ -131,17 +137,20 @@ class HomeScreen {
                 PullToRefreshLazyColumn<Any>(
                     isRefreshing = isRefreshingHome,
                     onRefresh = {
-                        userViewModel.viewModelScope.launch {
+                        scope.launch {
                             isRefreshingHome = true
                             delay(1000L)
-                            if (btnTagSelected.intValue == -1)
+                            if (btnTagSelected.intValue == -1) {
                                 videoAndPlaylistViewModel.fetchVideosHome {
                                     isRefreshingHome = false
                                 }
-                            else videoAndPlaylistViewModel
-                                .fetchVideosHomeWithCategoryId(
-                                    categoryId = btnTagSelected.intValue.toLong(),
-                                    action = { isRefreshingHome = false })
+                            } else {
+                                videoAndPlaylistViewModel
+                                    .fetchVideosHomeWithCategoryId(
+                                        categoryId = btnTagSelected.intValue.toLong(),
+                                        action = { isRefreshingHome = false })
+                            }
+                            pageCurrent = 0
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
@@ -151,11 +160,11 @@ class HomeScreen {
                                 VideoCard(
                                     index = index,
                                     videoModel = video,
-                                    onClick = { index, video ->
-                                        video?.uploader?.id?.let {
+                                    onClick = { idx, videoChild ->
+                                        videoChild.uploader?.id?.let {
                                             Navigate(
                                                 Router.VideoPlayerScreen(
-                                                    index = index,
+                                                    index = idx,
                                                     videoAt = VideoPlayerScreen.VideoAt.HOME_SCREEN,
                                                     uploaderId = it,
                                                     PlaylistVideoScreen.PlaylistAt.MY_PROFILE_SCREEN
@@ -170,6 +179,35 @@ class HomeScreen {
                                     }
                                 )
                                 Spacer(modifier = Modifier.height(20.dp))
+                            }
+                            BtnText(onClick = {
+                                scope.launch {
+                                    pageCurrent++
+                                    delay(1000L)
+                                    if (btnTagSelected.intValue == -1) {
+                                        videoAndPlaylistViewModel.fetchVideosHome(page = pageCurrent)
+                                    } else {
+                                        videoAndPlaylistViewModel
+                                            .fetchVideosHomeWithCategoryId(
+                                                categoryId = btnTagSelected.intValue.toLong(),
+                                                action = { },
+                                                page = pageCurrent
+                                            )
+                                    }
+                                }
+                            }, text = "More", height = 40.dp)
+                            Spacer(modifier = Modifier.height(20.dp))
+                        } else {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Heading(
+                                    text = "Empty",
+                                    size = CONSTANT.UI.TEXT_SIZE.LG,
+                                    color = AppColor.background_container
+                                )
                             }
                         }
                     }
@@ -195,7 +233,7 @@ class HomeScreen {
                             icon = painterResource(id = R.drawable.user_icon1),
                             text = "Go to ${nameUploader[nameUploader.size - 1]} account"
                         ) {
-                            videoBeOnLongClick?.value?.uploader?.id?.let {
+                            videoBeOnLongClick.value.uploader?.id?.let {
                                 Navigate(
                                     Router.UserProfileScreen(
                                         userId = it
@@ -239,7 +277,7 @@ class HomeScreen {
                     modifier = Modifier,
                     shape = CircleShape,
                     colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = if (btnTagSelected.value == index) AppColor.background_container
+                        containerColor = if (btnTagSelected.intValue == index) AppColor.primary_content
                         else Color.Transparent
                     )
                 ) {
@@ -255,16 +293,16 @@ class HomeScreen {
         LazyRow {
             item {
                 Tag(-1, "All") {
-                    btnTagSelected.value = -1
+                    btnTagSelected.intValue = -1
                     videoAndPlaylistViewModel
                         .fetchVideosHome()
                 }
                 Spacer(modifier = Modifier.width(5.dp))
             }
             categories.value?.let { list ->
-                items(list.size) { it ->
+                items(list.size) {
                     Tag(it, categories.value!![it].name) {
-                        btnTagSelected.value = it
+                        btnTagSelected.intValue = it
                         videoAndPlaylistViewModel
                             .fetchVideosHomeWithCategoryId(categoryId = categories.value!![it].id)
                     }
