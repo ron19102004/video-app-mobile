@@ -122,23 +122,6 @@ class PlaylistVideoScreen {
         val scope = rememberCoroutineScope()
         Scaffold(
             containerColor = AppColor.background,
-            topBar = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton( onClick = {
-                        AppInitializerState.navController.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = null,
-                            tint = AppColor.primary_text
-                        )
-                    }
-                }
-            },
             bottomBar = { NavigationBarBottom(userViewModel) },
         ) {
             val painterErrorVideo = painterResource(id = R.drawable.video_bg)

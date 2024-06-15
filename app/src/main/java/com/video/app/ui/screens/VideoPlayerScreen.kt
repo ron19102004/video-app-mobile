@@ -150,6 +150,7 @@ class VideoPlayerScreen {
                 VideoAt.HOME_SCREEN -> {
                     videoAndPlaylistViewModel.videosOnHomeScreen.value?.get(indexVideo)!!
                 }
+
                 VideoAt.PLAYER_SCREEN_OR_YOUR_PROFILE -> {
                     videoAndPlaylistViewModel.videosWithUploaderId.value?.get(indexVideo)!!
                 }
@@ -375,50 +376,68 @@ class VideoPlayerScreen {
 
     @Composable
     private fun DescriptionModalContent() {
-        Column(modifier = Modifier.padding(20.dp, 0.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Heading(text = "Description", size = CONSTANT.UI.TEXT_SIZE.MD)
+        LazyColumn(modifier = Modifier.padding(20.dp, 0.dp)) {
+            item {
                 Row(
-                    modifier = Modifier,
-                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = {
-                        videoSelected.value = videoPlayer.value
-                        openAddPlaylist.value = true
-                    }) {
-                        Image(
-                            painter = painterResource(id = R.drawable.save),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(onClick = { Navigate(Router.HomeScreen) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Home,
-                            contentDescription = null,
-                            tint = AppColor.primary_text
-                        )
+                    Heading(text = "Description", size = CONSTANT.UI.TEXT_SIZE.MD)
+                    Row(
+                        modifier = Modifier,
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = {
+                            videoSelected.value = videoPlayer.value
+                            openAddPlaylist.value = true
+                        }) {
+                            Image(
+                                painter = painterResource(id = R.drawable.save),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        IconButton(onClick = { Navigate(Router.HomeScreen) }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Home,
+                                contentDescription = null,
+                                tint = AppColor.primary_text
+                            )
+                        }
                     }
                 }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(10.dp))
-            videoPlayer.value.name?.let {
-                Heading(
-                    text = it,
-                    size = CONSTANT.UI.TEXT_SIZE.SM
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            LazyRow {
-                item {
-                    videoPlayer.value.tag?.let {
+                Spacer(modifier = Modifier.height(10.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(10.dp))
+                videoPlayer.value.name?.let {
+                    Heading(
+                        text = it,
+                        size = CONSTANT.UI.TEXT_SIZE.SM
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                LazyRow {
+                    item {
+                        videoPlayer.value.tag?.let {
+                            TextButton(
+                                onClick = { /*TODO*/ },
+                                modifier = Modifier.height(30.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = AppColor.background_container
+                                )
+                            ) {
+                                Text(
+                                    text = "#${it}", style = TextStyle(
+                                        color = AppColor.primary_text,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = CONSTANT.UI.TEXT_SIZE.SM_
+                                    )
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                         TextButton(
                             onClick = { /*TODO*/ },
                             modifier = Modifier.height(30.dp),
@@ -427,7 +446,8 @@ class VideoPlayerScreen {
                             )
                         ) {
                             Text(
-                                text = "#${it}", style = TextStyle(
+                                text = "Release: ${videoPlayer.value.release ?: "Unknown"}",
+                                style = TextStyle(
                                     color = AppColor.primary_text,
                                     fontWeight = FontWeight.Normal,
                                     fontSize = CONSTANT.UI.TEXT_SIZE.SM_
@@ -435,86 +455,69 @@ class VideoPlayerScreen {
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    TextButton(
-                        onClick = { /*TODO*/ },
-                        modifier = Modifier.height(30.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AppColor.background_container
-                        )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                videoPlayer.value.description?.let {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = AppColor.background_container,
+                                shape = RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON)
+                            ),
                     ) {
                         Text(
-                            text = "Release: ${videoPlayer.value.release ?: "Unknown"}",
+                            text = it,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
                             style = TextStyle(
-                                color = AppColor.primary_text,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = CONSTANT.UI.TEXT_SIZE.SM_
+                                color = AppColor.primary_text
                             )
                         )
                     }
                 }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            videoPlayer.value.description?.let {
-                Box(
+                Spacer(modifier = Modifier.height(20.dp))
+                val painterAvatarError = painterResource(id = R.drawable.user)
+                val imageAvatarModifier = Modifier
+                    .size(35.dp)
+                    .clip(CircleShape)
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            color = AppColor.background_container,
-                            shape = RoundedCornerShape(CONSTANT.UI.ROUNDED_INPUT_BUTTON)
-                        ),
-                ) {
-                    Text(
-                        text = it,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        style = TextStyle(
-                            color = AppColor.primary_text
-                        )
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            val painterAvatarError = painterResource(id = R.drawable.user)
-            val imageAvatarModifier = Modifier
-                .size(35.dp)
-                .clip(CircleShape)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        val uploaderId = videoPlayer?.value?.uploader?.id
-                        if (uploaderId != null) {
-                            userViewModel.fetchInfoUserConfirmed(id = uploaderId)
-                            videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = uploaderId)
-                            Navigate(
-                                Router.UserProfileScreen(
-                                    userId = uploaderId
+                        .clickable {
+                            val uploaderId = videoPlayer?.value?.uploader?.id
+                            if (uploaderId != null) {
+                                userViewModel.fetchInfoUserConfirmed(id = uploaderId)
+                                videoAndPlaylistViewModel.fetchVideosWithUploaderId(uploaderId = uploaderId)
+                                Navigate(
+                                    Router.UserProfileScreen(
+                                        userId = uploaderId
+                                    )
                                 )
-                            )
-                        }
-                    },
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = imageAvatarModifier) {
-                    AsyncImage(
-                        model = videoPlayer?.value?.uploader?.imageURL,
-                        contentDescription = null,
-                        modifier = imageAvatarModifier,
-                        contentScale = ContentScale.Fit,
-                        placeholder = painterAvatarError,
-                        error = painterAvatarError
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                videoPlayer.value.uploader?.fullName?.let {
-                    Heading(
-                        text = it,
-                        size = CONSTANT.UI.TEXT_SIZE.SM
-                    )
-                }
+                            }
+                        },
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = imageAvatarModifier) {
+                        AsyncImage(
+                            model = videoPlayer?.value?.uploader?.imageURL,
+                            contentDescription = null,
+                            modifier = imageAvatarModifier,
+                            contentScale = ContentScale.Fit,
+                            placeholder = painterAvatarError,
+                            error = painterAvatarError
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    videoPlayer.value.uploader?.fullName?.let {
+                        Heading(
+                            text = it,
+                            size = CONSTANT.UI.TEXT_SIZE.SM
+                        )
+                    }
+                };
             }
         }
         Spacer(modifier = Modifier.height(30.dp))

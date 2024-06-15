@@ -6,9 +6,21 @@ import com.video.app.states.objects.NavigationState
 import kotlinx.serialization.Serializable
 
 fun Navigate(router: Router) {
-    if (router is Router.HomeScreen) NavigationState.navSelected = 1
-    else if (router is Router.SettingScreen) NavigationState.navSelected = 2
-    else if (router is Router.MyProfileScreen) NavigationState.navSelected = 0
+    when (router) {
+        is Router.HomeScreen -> {
+            NavigationState.navSelected = 1
+        }
+
+        is Router.SettingScreen -> {
+            NavigationState.navSelected = 2
+        }
+
+        is Router.MyProfileScreen -> {
+            NavigationState.navSelected = 0
+        }
+
+        else -> {}
+    }
     AppInitializerState.navController.navigate(router)
 }
 
